@@ -10,20 +10,51 @@ question → grounded answer → failure classification → documentation gap �
 
 ## Current status
 
-**Phase 0: implemented for review.**
-
-Phase 0 freezes the initial customer, product boundaries, truth contract, source policy, risk model, benchmark corpus, evaluation schema, economics envelope, and the gate for beginning Phase 1.
+- **Phase 0:** implemented for review in PR #1.
+- **Phase 1:** deterministic truth-engine vertical slice implemented for review; the verified Hono quality gate remains intentionally open.
 
 Start here:
 
 - [Phase 0 index](docs/phase-0/README.md)
+- [Phase 1 implementation](docs/phase-1/README.md)
+- [Phase 1 gate review](reviews/phase-1-truth-engine-review.md)
 - [Product constitution](docs/phase-0/product-constitution.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
-- [Pilot specification](docs/phase-0/pilot-specification.md)
 - [Threat model](docs/phase-0/threat-model.md)
-- [Evaluation policy](docs/phase-0/evaluation-policy.md)
-- [Phase 0 decisions](docs/architecture/decisions/phase-0-decisions.md)
 - [Hono benchmark manifest](evals/datasets/hono-phase0.manifest.json)
+
+## Truth-engine capabilities
+
+The current Phase 1 branch includes:
+
+- safe public URL validation and bounded fetching;
+- pinned public GitHub repository ingestion support;
+- structure-aware Markdown normalization and chunking;
+- project-, version-, runtime-, revision-, and authority-aware retrieval;
+- hybrid lexical and deterministic semantic retrieval;
+- answer-state policy before model generation;
+- extractive deterministic answers for tests;
+- an optional provider-neutral Claude adapter;
+- claim-to-evidence citation validation;
+- a reproducible evaluation runner;
+- a Supabase schema with project-scoped RLS;
+- unit, security, retrieval, answer, and evaluation tests.
+
+The deterministic hash embedding and synthetic mini corpus are engineering baselines, not production-quality claims. Phase 1 passes only after the candidate Hono benchmark is source-verified and the selected production routes meet the Phase 0 thresholds.
+
+## Local development
+
+Requires Node.js 22 or newer.
+
+```bash
+npm install
+npm run check
+npm run demo
+npm run ask -- --question "How do I read a path parameter?"
+npm run eval:mini
+```
+
+Optional Claude-backed answering requires `ANTHROPIC_API_KEY` and an explicit `CLAUDE_MODEL` value.
 
 ## Product wedge
 
@@ -45,17 +76,15 @@ Supabase Postgres + Auth + RLS + pgvector
         ↓
 structure-aware ingestion + hybrid retrieval
         ↓
-Claude answer generation with citation validation and abstention
+provider-neutral answer generation with citation validation and abstention
         ↓
 embeddable widget + learning console
 ```
 
-The architecture remains a hypothesis until Phase 1 validates retrieval quality, citation support, latency, cost, and safety against the committed benchmark.
-
 ## Phase roadmap
 
-1. **Phase 0 — Position and benchmark:** implemented in this repository.
-2. **Phase 1 — Truth engine:** ingestion, structure-aware chunks, hybrid retrieval, answer states, citations, evaluation harness.
+1. **Phase 0 — Position and benchmark:** implemented for review.
+2. **Phase 1 — Truth engine:** vertical slice implemented; verified-corpus gate pending.
 3. **Phase 2 — Single-project widget:** embeddable UI, feedback, domain controls, rate limits.
 4. **Phase 3 — Learning console:** failure triage, unanswered clusters, source health.
 5. **Phase 4 — Reliable ingestion:** revisions, incremental refresh, deletions, retries, version awareness.
@@ -72,4 +101,4 @@ The architecture remains a hypothesis until Phase 1 validates retrieval quality,
 | Competition | Kapa, Inkeep, Mendable, internal RAG builds, and improved documentation search |
 | Defensibility | Evaluation data, source revision lineage, failure classification, and the documentation improvement loop |
 
-No production service exists yet. Phase 1 must pass the gate in [`docs/phase-0/README.md`](docs/phase-0/README.md) before a public widget is built.
+No public widget should be built until the Phase 1 truth-engine gate is independently reviewed.

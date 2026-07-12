@@ -1,0 +1,16 @@
+{
+  "name": "docsage",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "test": "node --test",
+    "check": "npm run validate:evals && npm test",
+    "validate:evals": "node scripts/validate-evals.mjs",
+    "demo": "node apps/cli/src/main.mjs demo",
+    "ask": "node apps/cli/src/main.mjs ask",
+    "eval:mini": "node apps/cli/src/main.mjs eval --allow-candidate",
+    "corpus:mini": "node scripts/build-mini-corpus.mjs"
+  }
+}

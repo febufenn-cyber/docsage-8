@@ -1,0 +1,74 @@
+import { tokenize, exactIdentifiers } from './tokenize.mjs';
+
+function hashToken(token, dimensions) {
+  let hash = 2166136261;
+  for (let index = 0; index < token.length; index += 1) hash = Math.imul(hash ^ token.charCodeAt(index), 16777619);
+  return Math.abs(hash) % dimensions;
+}
+
+export function hashEmbedding(text, dimensions = 256) {
+  const vector = new Float64Array(dimensions);
+  for (const token of tokenize(text)) vector[hashToken(token, dimensions)] += 1;
+  const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0)) || 1;
+  return Array.from(vector, (value) => value / norm);
+}
+
+function cosine(a, b) {
+  let score = 0;
+  for (let index = 0; index < Math.min(a.length, b.length); index += 1) score += a[index] * b[index];
+  return score;
+}
+
+function bm25(queryTokens, documents) {
+  const lengths = documents.map((tokens) => tokens.length);
+  const average = lengths.reduce((sum, length) => sum + length, 0) / Math.max(1, lengths.length);
+  const frequencies = new Map();
+  for (const token of new Set(queryTokens)) frequencies.set(token, documents.filter((doc) => doc.includes(token)).length);
+  return documents.map((tokens, documentIndex) => {
+    const counts = new Map();
+    for (const token of tokens) counts.set(token, (counts.get(token) ?? 0) + 1);
+    let score = 0;
+    for (const token of queryTokens) {
+      const df = frequencies.get(token) ?? 0;
+      const idf = Math.log(1 + (documents.length - df + 0.5) / (df + 0.5));
+      const tf = counts.get(token) ?? 0;
+      score += idf * ((tf * 2.2) / (tf + 1.2 * (1 - 0.75 + 0.75 * lengths[documentIndex] / Math.max(1, average))));
+    }
+    return score;
+  });
+}
+
+function ranks(scores) {
+  return scores.map((score, index) => ({ index, score })).sort((a, b) => b.score - a.score)
+    .reduce((map, item, rank) => map.set(item.index, rank + 1), new Map());
+}
+
+export function hybridRetrieve({ query, chunks, projectId, version = 'current', runtime = 'all', limit = 8 }) {
+  const eligible = chunks.filter((chunk) => chunk.projectId === projectId && chunk.active !== false)
+    .filter((chunk) => !version || chunk.version === version || chunk.version === 'all')
+    .filter((chunk) => runtime === 'all' || chunk.runtime === 'all' || chunk.runtime === runtime);
+  const queryTokens = tokenize(query);
+  const documentTokens = eligible.map((chunk) => tokenize(chunk.searchText));
+  const keywordScores = bm25(queryTokens, documentTokens);
+  const queryVector = hashEmbedding(query);
+  const vectorScores = eligible.map((chunk) => cosine(queryVector, hashEmbedding(chunk.searchText)));
+  const keywordRanks = ranks(keywordScores);
+  const vectorRanks = ranks(vectorScores);
+  const identifiers = exactIdentifiers(query);
+
+  return eligible.map((chunk, index) => {
+    const exactMatches = identifiers.filter((identifier) => chunk.searchText.toLowerCase().includes(identifier)).length;
+    const fusion = 1 / (60 + keywordRanks.get(index)) + 1 / (60 + vectorRanks.get(index));
+    const authorityBonus = Math.max(0, 5 - (chunk.authorityLevel ?? 5)) * 0.001;
+    const exactBonus = exactMatches * 0.02;
+    return {
+      ...chunk,
+      score: fusion + authorityBonus + exactBonus,
+      keywordScore: keywordScores[index],
+      vectorScore: vectorScores[index],
+      keywordRank: keywordRanks.get(index),
+      vectorRank: vectorRanks.get(index),
+      exactMatches
+    };
+  }).sort((a, b) => b.score - a.score).slice(0, limit);
+}
