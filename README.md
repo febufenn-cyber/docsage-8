@@ -1,42 +1,75 @@
-# Docsage
+# DocSage
 
-> drop-in docs Q&A widget for OSS and dev-tool sites that answers with cited sources.
+> A drop-in documentation Q&A widget for OSS and developer-tool sites that answers from approved sources and shows evidence.
 
-**Alternative to the product-shape pioneered by Kapa.ai (YC S23)** — rank #8 of 500 in the [YC-500 Fable 5 Venture Blueprint](https://github.com/) (score 7.25/10).
+DocSage is being developed as a **documentation intelligence loop**, not merely a generic chatbot:
 
-## Why this exists
-Proven that docs-to-answers deflects tickets for dev-tool companies at scale. The buildable wedge: ingest docs, embed, retrieve, answer with citations via claude and supabase pgvector.
+```text
+question → grounded answer → failure classification → documentation gap → proposed improvement
+```
 
-## MVP scope
-- [ ] Crawl docs + GitHub
-- [ ] pgvector RAG
-- [ ] embeddable chat widget
-- [ ] citation links
-- [ ] unanswered-question log
+## Current status
 
-## Architecture
-`Workers+Supabase(pgvector)+Claude` — Cloudflare Workers + Hono API, Supabase (Postgres + RLS + Auth + pgvector), Claude API via Agent SDK (claude-fable-5 for agent reasoning, claude-haiku-4-5 for volume), wrangler deploys.
+**Phase 0: implemented for review.**
 
-**Integrations:** GitHub API; sitemap crawler; Claude API; Slack webhook
-**Data:** Docs pages, embeddings, chat logs, unanswered questions
-**Agent core:** Retrieval agent answers; escalation agent flags gaps and drafts new doc.
+Phase 0 freezes the initial customer, product boundaries, truth contract, source policy, risk model, benchmark corpus, evaluation schema, economics envelope, and the gate for beginning Phase 1.
 
-## Business
-| | |
+Start here:
+
+- [Phase 0 index](docs/phase-0/README.md)
+- [Product constitution](docs/phase-0/product-constitution.md)
+- [Answer constitution](docs/phase-0/answer-constitution.md)
+- [Pilot specification](docs/phase-0/pilot-specification.md)
+- [Threat model](docs/phase-0/threat-model.md)
+- [Evaluation policy](docs/phase-0/evaluation-policy.md)
+- [Phase 0 decisions](docs/architecture/decisions/phase-0-decisions.md)
+- [Hono benchmark manifest](evals/datasets/hono-phase0.manifest.json)
+
+## Product wedge
+
+The first customer profile is a small API, SDK, infrastructure, or developer-tool company with:
+
+- public English documentation;
+- one public GitHub repository;
+- recurring setup, integration, and troubleshooting questions;
+- a founder, developer advocate, documentation owner, or support lead who can run a pilot.
+
+The first release is read-only and public-source-only. Private repositories, account-specific support, autonomous writes, enterprise SSO, and broad integrations are deliberately excluded.
+
+## Planned architecture
+
+```text
+Cloudflare Workers + Hono
+        ↓
+Supabase Postgres + Auth + RLS + pgvector
+        ↓
+structure-aware ingestion + hybrid retrieval
+        ↓
+Claude answer generation with citation validation and abstention
+        ↓
+embeddable widget + learning console
+```
+
+The architecture remains a hypothesis until Phase 1 validates retrieval quality, citation support, latency, cost, and safety against the committed benchmark.
+
+## Phase roadmap
+
+1. **Phase 0 — Position and benchmark:** implemented in this repository.
+2. **Phase 1 — Truth engine:** ingestion, structure-aware chunks, hybrid retrieval, answer states, citations, evaluation harness.
+3. **Phase 2 — Single-project widget:** embeddable UI, feedback, domain controls, rate limits.
+4. **Phase 3 — Learning console:** failure triage, unanswered clusters, source health.
+5. **Phase 4 — Reliable ingestion:** revisions, incremental refresh, deletions, retries, version awareness.
+6. **Phase 5 — Commercial foundation:** organizations, RLS, usage, billing, deletion, auditability.
+7. **Phase 6 — Documentation intelligence:** evidence-backed doc drafts and human-approved GitHub pull requests.
+
+## Original business hypothesis
+
+| Item | Hypothesis |
 |---|---|
-| Monetization | $99-499/mo per docs site |
-| First customer | Small dev-tool startup with public docs |
-| GTM wedge | Free tier + 'Ask AI' badge backlink; launch on OSS repos and Dev communities |
-| Competition risk | High: Kapa, Inkeep, Mendable |
-| Regulatory/trust risk | Low: public docs only |
-| India angle | Serve Indian dev-tool startups (Hasura-style) needing cheap docs support. |
-| Difficulty / build time | Medium / 2-3 weeks |
+| Monetization | $99–$499 per documentation site per month |
+| First customer | Small developer-tool startup with public docs |
+| GTM wedge | Free OSS tier or badge-led distribution, followed by paid commercial projects |
+| Competition | Kapa, Inkeep, Mendable, internal RAG builds, and improved documentation search |
+| Defensibility | Evaluation data, source revision lineage, failure classification, and the documentation improvement loop |
 
-## 30-day plan
-- **W1:** core loop — Crawl docs + GitHub + pgvector RAG
-- **W2:** embeddable chat widget + citation links + unanswered-question log + auth + billing
-- **W3:** polish, instrument events, seed first users via: Free tier + 'Ask AI' badge backlink; launch on OSS repos and Dev communities
-- **W4:** launch + first revenue; kill/scale decision
-
----
-*Built with Fable 5 (Claude Code). Blueprint row: inspired by Kapa.ai — "AI assistant that answers technical questions from a company's docs and content."*
+No production service exists yet. Phase 1 must pass the gate in [`docs/phase-0/README.md`](docs/phase-0/README.md) before a public widget is built.

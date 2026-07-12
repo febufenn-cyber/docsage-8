@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://docsage.local/schemas/evaluation-case.schema.json",
+  "title": "DocSage evaluation case",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "question",
+    "category",
+    "answerable",
+    "expected_state",
+    "risk",
+    "expected_sources",
+    "must_include",
+    "must_not_claim",
+    "version_scope",
+    "runtime_scope",
+    "annotation_status",
+    "split",
+    "notes"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]+$"
+    },
+    "question": {
+      "type": "string",
+      "minLength": 5
+    },
+    "category": {
+      "enum": [
+        "direct",
+        "setup",
+        "api",
+        "configuration",
+        "authentication",
+        "testing",
+        "validation",
+        "rpc",
+        "middleware",
+        "code",
+        "multi-source",
+        "comparison",
+        "version",
+        "runtime",
+        "unanswerable",
+        "account-specific",
+        "conflict",
+        "adversarial"
+      ]
+    },
+    "answerable": {
+      "type": "boolean"
+    },
+    "expected_state": {
+      "enum": [
+        "supported",
+        "partially_supported",
+        "conflicting_sources",
+        "version_ambiguous",
+        "runtime_ambiguous",
+        "not_found",
+        "account_specific",
+        "out_of_scope",
+        "unsafe_or_untrusted"
+      ]
+    },
+    "risk": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "expected_sources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      },
+      "uniqueItems": true
+    },
+    "must_include": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "must_not_claim": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
+    "version_scope": {
+      "type": "string"
+    },
+    "runtime_scope": {
+      "type": "string"
+    },
+    "annotation_status": {
+      "enum": [
+        "candidate",
+        "source-verified",
+        "independently-reviewed",
+        "verified",
+        "rejected"
+      ]
+    },
+    "split": {
+      "enum": [
+        "development",
+        "holdout",
+        "adversarial",
+        "pilot"
+      ]
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
