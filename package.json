@@ -11,6 +11,10 @@
     "demo": "node apps/cli/src/main.mjs demo",
     "ask": "node apps/cli/src/main.mjs ask",
     "eval:mini": "node apps/cli/src/main.mjs eval --allow-candidate",
-    "corpus:mini": "node scripts/build-mini-corpus.mjs"
+    "corpus:mini": "node scripts/build-mini-corpus.mjs",
+    "corpus:hono": "node scripts/fetch-hono-corpus.mjs",
+    "verify:hono": "node scripts/materialize-hono-benchmark.mjs",
+    "eval:hono": "node scripts/run-hono-gate.mjs",
+    "gate:hono": "npm run corpus:hono && npm run verify:hono && npm run eval:hono"
   }
 }

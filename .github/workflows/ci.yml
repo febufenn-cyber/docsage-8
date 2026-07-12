@@ -20,3 +20,30 @@ jobs:
       - run: npm install --ignore-scripts
       - run: npm run check
       - run: npm run demo
+
+  hono-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --ignore-scripts
+      - name: Run pinned Hono engineering gate
+        run: npm run gate:hono
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-1-hono-gate
+          if-no-files-found: warn
+          path: |
+            .tmp/hono-corpus/corpus-lock.json
+            .tmp/hono-benchmark/review-report.json
+            .tmp/hono-benchmark/verified.jsonl
+            .tmp/hono-eval/manifest.json
+            .tmp/hono-eval/metrics.json
+            .tmp/hono-eval/results.jsonl
+            .tmp/hono-eval/report.md
+            .tmp/hono-eval/gate.json

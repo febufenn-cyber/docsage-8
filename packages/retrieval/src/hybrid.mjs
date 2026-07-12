@@ -6,7 +6,7 @@ function hashToken(token, dimensions) {
   return Math.abs(hash) % dimensions;
 }
 
-export function hashEmbedding(text, dimensions = 256) {
+export function hashEmbedding(text, dimensions = 512) {
   const vector = new Float64Array(dimensions);
   for (const token of tokenize(text)) vector[hashToken(token, dimensions)] += 1;
   const norm = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0)) || 1;
@@ -43,10 +43,30 @@ function ranks(scores) {
     .reduce((map, item, rank) => map.set(item.index, rank + 1), new Map());
 }
 
+function coverage(queryTokens, text) {
+  if (!queryTokens.length) return 0;
+  const tokens = new Set(tokenize(text));
+  return new Set(queryTokens.filter((token) => tokens.has(token))).size / new Set(queryTokens).size;
+}
+
+function phraseSignals(query, chunk) {
+  const lowerQuery = String(query).toLowerCase();
+  const title = String(chunk.title ?? '').toLowerCase();
+  const headings = (chunk.headingPath ?? []).join(' ').toLowerCase();
+  const slug = String(chunk.canonicalUrl ?? '').split('/').filter(Boolean).at(-1)?.replaceAll('-', ' ') ?? '';
+  let score = 0;
+  if (title && lowerQuery.includes(title)) score += 0.035;
+  if (slug && lowerQuery.includes(slug)) score += 0.025;
+  score += coverage(tokenize(query), `${title} ${headings} ${slug}`) * 0.025;
+  return score;
+}
+
 export function hybridRetrieve({ query, chunks, projectId, version = 'current', runtime = 'all', limit = 8 }) {
   const eligible = chunks.filter((chunk) => chunk.projectId === projectId && chunk.active !== false)
     .filter((chunk) => !version || chunk.version === version || chunk.version === 'all')
     .filter((chunk) => runtime === 'all' || chunk.runtime === 'all' || chunk.runtime === runtime);
+  if (!eligible.length) return [];
+
   const queryTokens = tokenize(query);
   const documentTokens = eligible.map((chunk) => tokenize(chunk.searchText));
   const keywordScores = bm25(queryTokens, documentTokens);
@@ -57,17 +77,22 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
   const identifiers = exactIdentifiers(query);
 
   return eligible.map((chunk, index) => {
-    const exactMatches = identifiers.filter((identifier) => chunk.searchText.toLowerCase().includes(identifier)).length;
+    const searchLower = chunk.searchText.toLowerCase();
+    const exactMatches = identifiers.filter((identifier) => searchLower.includes(identifier)).length;
+    const tokenCoverage = coverage(queryTokens, chunk.searchText);
     const fusion = 1 / (60 + keywordRanks.get(index)) + 1 / (60 + vectorRanks.get(index));
     const authorityBonus = Math.max(0, 5 - (chunk.authorityLevel ?? 5)) * 0.001;
-    const exactBonus = exactMatches * 0.02;
+    const exactBonus = exactMatches * 0.04;
+    const coverageBonus = tokenCoverage * 0.035;
+    const structureBonus = phraseSignals(query, chunk);
     return {
       ...chunk,
-      score: fusion + authorityBonus + exactBonus,
+      score: fusion + authorityBonus + exactBonus + coverageBonus + structureBonus,
       keywordScore: keywordScores[index],
       vectorScore: vectorScores[index],
       keywordRank: keywordRanks.get(index),
       vectorRank: vectorRanks.get(index),
+      tokenCoverage,
       exactMatches
     };
   }).sort((a, b) => b.score - a.score).slice(0, limit);

@@ -49,6 +49,9 @@ export async function runEvaluation(options) {
     const forbidden = item.must_not_claim.map((concept) => ({ concept, found: includesConcept(response.answer, concept) }));
     results.push({
       caseId: item.id,
+      category: item.category,
+      risk: item.risk,
+      answerable: item.answerable,
       expectedState: item.expected_state,
       actualState: response.state,
       stateCorrect: item.expected_state === response.state || (item.expected_state === 'supported' && response.state === 'partially_supported'),
@@ -57,6 +60,7 @@ export async function runEvaluation(options) {
       forbiddenClaimFree: forbidden.every((entry) => !entry.found),
       citationValid: response.validation.valid,
       latencyMs: response.latencyMs,
+      variableCostUsd: response.variableCostUsd ?? 0,
       traceId: response.traceId,
       answer: response.answer,
       failures: response.failures,
@@ -66,9 +70,11 @@ export async function runEvaluation(options) {
     });
   }
 
-  const answerable = results.filter((_, index) => selectedCases[index].answerable);
-  const unanswerable = results.filter((_, index) => !selectedCases[index].answerable);
-  const highRisk = results.filter((_, index) => selectedCases[index].risk === 'high' && selectedCases[index].answerable);
+  const answerable = results.filter((item) => item.answerable);
+  const unanswerable = results.filter((item) => !item.answerable);
+  const highRisk = results.filter((item) => item.risk === 'high' && item.answerable);
+  const adversarial = results.filter((item) => item.category === 'adversarial' || item.actualState === 'unsafe_or_untrusted' || item.expectedState === 'unsafe_or_untrusted');
+  const versionPolicy = results.filter((item) => ['version_ambiguous','runtime_ambiguous','conflicting_sources'].includes(item.expectedState));
   const recallValues = answerable.filter((item) => item.sourceRecall !== null);
   const metrics = {
     caseCount: results.length,
@@ -78,9 +84,13 @@ export async function runEvaluation(options) {
     conceptCoverage: mean(answerable.map((item) => item.conceptCoverage)),
     forbiddenClaimSafety: mean(results.map((item) => Number(item.forbiddenClaimFree))),
     citationValidationRate: mean(answerable.map((item) => Number(item.citationValid))),
-    abstentionAccuracy: mean(unanswerable.map((item) => Number(['not_found','account_specific','out_of_scope','unsafe_or_untrusted','version_ambiguous','runtime_ambiguous'].includes(item.actualState)))),
+    abstentionAccuracy: mean(unanswerable.map((item) => Number(item.stateCorrect))),
+    adversarialAccuracy: mean(adversarial.map((item) => Number(item.stateCorrect && item.forbiddenClaimFree))),
+    versionConflictAccuracy: mean(versionPolicy.map((item) => Number(item.stateCorrect))),
     medianLatencyMs: percentile(results.map((item) => item.latencyMs), 0.5),
-    p95LatencyMs: percentile(results.map((item) => item.latencyMs), 0.95)
+    p95LatencyMs: percentile(results.map((item) => item.latencyMs), 0.95),
+    meanVariableCostUsd: mean(results.map((item) => item.variableCostUsd)),
+    totalVariableCostUsd: results.reduce((sum, item) => sum + item.variableCostUsd, 0)
   };
   const manifest = {
     runId: `eval_${Date.now()}`,
@@ -105,5 +115,5 @@ export async function runEvaluation(options) {
 
 export function renderReport(manifest, metrics) {
   const percent = (value) => `${(value * 100).toFixed(1)}%`;
-  return `# DocSage evaluation run\n\n- Run: \`${manifest.runId}\`\n- Candidate mode: **${manifest.candidateMode}**\n- Cases: **${metrics.caseCount}**\n\n| Metric | Result |\n|---|---:|\n| State accuracy | ${percent(metrics.stateAccuracy)} |\n| Retrieval recall@8 | ${percent(metrics.retrievalRecallAt8)} |\n| High-risk recall@8 | ${percent(metrics.highRiskRecallAt8)} |\n| Concept coverage | ${percent(metrics.conceptCoverage)} |\n| Forbidden-claim safety | ${percent(metrics.forbiddenClaimSafety)} |\n| Citation validation | ${percent(metrics.citationValidationRate)} |\n| Abstention accuracy | ${percent(metrics.abstentionAccuracy)} |\n| Median latency | ${metrics.medianLatencyMs.toFixed(1)} ms |\n| p95 latency | ${metrics.p95LatencyMs.toFixed(1)} ms |\n`;
+  return `# DocSage evaluation run\n\n- Run: \`${manifest.runId}\`\n- Candidate mode: **${manifest.candidateMode}**\n- Cases: **${metrics.caseCount}**\n\n| Metric | Result |\n|---|---:|\n| State accuracy | ${percent(metrics.stateAccuracy)} |\n| Retrieval recall@8 | ${percent(metrics.retrievalRecallAt8)} |\n| High-risk recall@8 | ${percent(metrics.highRiskRecallAt8)} |\n| Concept coverage | ${percent(metrics.conceptCoverage)} |\n| Forbidden-claim safety | ${percent(metrics.forbiddenClaimSafety)} |\n| Citation validation | ${percent(metrics.citationValidationRate)} |\n| Abstention accuracy | ${percent(metrics.abstentionAccuracy)} |\n| Adversarial accuracy | ${percent(metrics.adversarialAccuracy)} |\n| Version/conflict accuracy | ${percent(metrics.versionConflictAccuracy)} |\n| Median latency | ${metrics.medianLatencyMs.toFixed(1)} ms |\n| p95 latency | ${metrics.p95LatencyMs.toFixed(1)} ms |\n| Mean variable cost | $${metrics.meanVariableCostUsd.toFixed(6)} |\n`;
 }
