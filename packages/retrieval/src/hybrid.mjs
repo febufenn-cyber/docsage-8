@@ -88,6 +88,7 @@ function expandQuery(query) {
   const additions = [];
   if (/\b(?:unchanged|identical|universal(?:ly)?|every runtime|all runtimes?)\b/i.test(query)) additions.push('runtime platform exact platform entry point adapter');
   if (/\btests?\b/i.test(query)) additions.push('testing app.request request helper');
+  if (/\bcreate\b/i.test(query) && /\brun\b/i.test(query) && /\btests?\b/i.test(query)) additions.push('npm create hono@latest npm run dev');
   if (/authorization.*header|header.*authorization/i.test(query)) additions.push('Bearer token prefix headerName');
   if (/\bwildcards?\b/i.test(query)) additions.push('wildcards asterisk star route');
   return additions.length ? `${query} ${additions.join(' ')}` : query;
@@ -144,6 +145,21 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
     selected.push(item);
     selectedIds.add(item.id);
     documentCounts.set(item.canonicalUrl, 1);
+  }
+  const covered = new Set(selected.flatMap((item) => tokenize(item.searchText)));
+  while (selected.length < limit) {
+    const candidate = scored
+      .filter((item) => !selectedIds.has(item.id) && (documentCounts.get(item.canonicalUrl) ?? 0) < 5)
+      .map((item) => {
+        const additions = new Set(queryTokens.filter((token) => tokenize(item.searchText).includes(token) && !covered.has(token)));
+        return { item, gain: additions.size, additions };
+      })
+      .sort((a, b) => b.gain - a.gain || b.item.score - a.item.score)[0];
+    if (!candidate || candidate.gain === 0) break;
+    selected.push(candidate.item);
+    selectedIds.add(candidate.item.id);
+    documentCounts.set(candidate.item.canonicalUrl, (documentCounts.get(candidate.item.canonicalUrl) ?? 0) + 1);
+    for (const token of candidate.additions) covered.add(token);
   }
   for (const item of scored) {
     if (selected.length >= limit) break;
