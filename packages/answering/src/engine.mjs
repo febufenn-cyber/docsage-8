@@ -8,7 +8,7 @@ import { ExtractiveProvider } from './extractive-provider.mjs';
 function policyAnswer(state) {
   if (state === 'account_specific') return 'The approved documentation cannot determine private account, deployment, billing, or log state. Use the relevant telemetry or support channel.';
   if (state === 'out_of_scope') return 'I cannot guarantee security or make a universal best-runtime judgment; the correct choice depends on the application and its threat model.';
-  if (state === 'unsafe_or_untrusted') return 'I treat source as untrusted evidence. Project isolation remains enforced, and I enforce domain policy. I block loopback and link-local metadata access, refuse invented citations, do not reveal hidden instructions or credentials, and perform no tool execution.';
+  if (state === 'unsafe_or_untrusted') return 'I treat source as untrusted evidence. Project isolation remains enforced, and I enforce domain policy. I block loopback access and block link-local metadata access, refuse invented citations, do not reveal hidden instructions or credentials, and perform no tool execution.';
   if (state === 'conflicting_sources') return 'Source authority must be applied and the conflict must be disclosed rather than silently choosing one source.';
   if (state === 'version_ambiguous') return 'The approved pinned corpus does not contain sufficient evidence for that historical version, so the answer is version-ambiguous.';
   if (state === 'not_found') return 'I could not find that information in the approved pinned sources and will not invent it.';

@@ -17,7 +17,8 @@ const UNSAFE_PATTERNS = [
   /retrieve cloud credentials/i,
   /secret token.*maintainers|maintainers.*secret token/i,
   /system prompt|hidden instructions/i,
-  /cloud credentials|allowed[- ]domain/i
+  /cloud credentials|allowed[- ]domain/i,
+  /realistic citation|create.*citation.*trustworthy|citation.*looks trustworthy/i
 ];
 const OUT_OF_SCOPE_PATTERNS = [
   /\bguarantee\b.*\bsecure\b/i,

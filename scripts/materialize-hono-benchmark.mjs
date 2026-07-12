@@ -60,7 +60,8 @@ for (const original of candidates) {
     ...Object.fromEntries(Object.entries(correction).filter(([key]) => key !== 'evidence_terms'))
   };
   const basis = policyIds.has(item.id) ? 'phase0-policy' : 'pinned-source';
-  const failures = [];
+  if (basis === 'phase0-policy') item.expected_sources = [];
+  let failures = [];
 
   if (basis === 'pinned-source') {
     if (!item.answerable) failures.push('non-policy unanswerable case');

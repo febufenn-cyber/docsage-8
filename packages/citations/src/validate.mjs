@@ -16,7 +16,7 @@ export function validateClaims({ claims, evidence, projectId, minimumOverlap = 0
   const results = claims.map((claim) => {
     const cited = (claim.evidenceIds ?? []).map((id) => byId.get(id)).filter(Boolean);
     const foreign = cited.some((item) => item.projectId !== projectId);
-    const combined = cited.map((item) => item.displayText).join('\n');
+    const combined = cited.map((item) => item.searchText ?? `${item.title ?? ''}\n${(item.headingPath ?? []).join(' > ')}\n${item.displayText}`).join('\n');
     const identifiers = exactIdentifiers(claim.text);
     const numbers = numericValues(claim.text);
     const identifierSupport = identifiers.every((value) => combined.toLowerCase().includes(value));
