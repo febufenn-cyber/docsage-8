@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   test:
@@ -31,7 +32,46 @@ jobs:
           cache: npm
       - run: npm install --ignore-scripts
       - name: Run pinned Hono engineering gate
-        run: npm run gate:hono
+        shell: bash
+        run: |
+          mkdir -p .tmp
+          set +e
+          npm run gate:hono 2>&1 | tee .tmp/hono-gate.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > .tmp/hono-gate.exit
+          exit "$status"
+      - name: Publish gate diagnostic
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          {
+            echo '<!-- docsage-phase1-gate -->'
+            echo '## Phase 1 pinned Hono gate'
+            echo
+            if [ -f .tmp/hono-eval/gate.json ]; then
+              echo '```json'
+              cat .tmp/hono-eval/gate.json
+              echo '```'
+            elif [ -f .tmp/hono-benchmark/review-report.json ]; then
+              echo 'The benchmark materialized, but evaluation did not produce a gate file.'
+              echo '```json'
+              cat .tmp/hono-benchmark/review-report.json
+              echo '```'
+            else
+              echo 'The gate failed before producing structured output.'
+            fi
+            echo
+            echo '<details><summary>Final gate log</summary>'
+            echo
+            echo '```text'
+            tail -n 100 .tmp/hono-gate.log 2>/dev/null || true
+            echo '```'
+            echo '</details>'
+          } > .tmp/hono-gate-comment.md
+          gh pr comment "$PR_NUMBER" --body-file .tmp/hono-gate-comment.md
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -39,6 +79,8 @@ jobs:
           name: phase-1-hono-gate
           if-no-files-found: warn
           path: |
+            .tmp/hono-gate.log
+            .tmp/hono-gate.exit
             .tmp/hono-corpus/corpus-lock.json
             .tmp/hono-benchmark/review-report.json
             .tmp/hono-benchmark/verified.jsonl
