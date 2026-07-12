@@ -2,7 +2,7 @@
 
 Status: **keyless engineering gate passed; hosted-production and independent-review gates remain explicit**.
 
-Phase 0 is merged into `main`, and this Phase 1 branch is retargeted to `main` for final integration. The latest pinned Hono gate completed with 76/76 cases passing and no failed cases.
+Phase 0 and Phase 1 are merged into `main`. The latest pinned Hono gate completed with 76/76 cases passing and no failed cases.
 
 ## What this branch adds
 
