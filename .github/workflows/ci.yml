@@ -40,38 +40,50 @@ jobs:
           status=${PIPESTATUS[0]}
           echo "$status" > .tmp/hono-gate.exit
           exit "$status"
-      - name: Publish gate diagnostic
+      - name: Publish latest gate diagnostic in PR body
         if: always() && github.event_name == 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         shell: bash
         run: |
-          {
-            echo '<!-- docsage-phase1-gate -->'
-            echo '## Phase 1 pinned Hono gate'
-            echo
-            if [ -f .tmp/hono-eval/gate.json ]; then
-              echo '```json'
-              cat .tmp/hono-eval/gate.json
-              echo '```'
-            elif [ -f .tmp/hono-benchmark/review-report.json ]; then
-              echo 'The benchmark materialized, but evaluation did not produce a gate file.'
-              echo '```json'
-              cat .tmp/hono-benchmark/review-report.json
-              echo '```'
-            else
-              echo 'The gate failed before producing structured output.'
-            fi
-            echo
-            echo '<details><summary>Final gate log</summary>'
-            echo
-            echo '```text'
-            tail -n 100 .tmp/hono-gate.log 2>/dev/null || true
-            echo '```'
-            echo '</details>'
-          } > .tmp/hono-gate-comment.md
-          gh pr comment "$PR_NUMBER" --body-file .tmp/hono-gate-comment.md
+          gh pr view "$PR_NUMBER" --json body --jq .body > .tmp/pr-body.md
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          start = '<!-- docsage-phase1-gate:start -->'
+          end = '<!-- docsage-phase1-gate:end -->'
+          body_path = Path('.tmp/pr-body.md')
+          body = body_path.read_text()
+          if start in body and end in body:
+              before, rest = body.split(start, 1)
+              _, after = rest.split(end, 1)
+              body = before.rstrip() + '\n\n' + after.lstrip()
+
+          gate_path = Path('.tmp/hono-eval/gate.json')
+          review_path = Path('.tmp/hono-benchmark/review-report.json')
+          segment = [start, '## Latest Phase 1 pinned Hono gate', '']
+          if gate_path.exists():
+              gate = json.loads(gate_path.read_text())
+              segment.extend([
+                  f"**Decision:** `{gate['decision']}`  ",
+                  f"**Engineering passed:** `{gate['engineeringPassed']}`  ",
+                  f"**Run SHA:** `{os.environ.get('GITHUB_SHA', 'unknown')}`",
+                  '',
+                  '```json',
+                  json.dumps(gate, indent=2),
+                  '```'
+              ])
+          elif review_path.exists():
+              segment.extend(['Evaluation did not produce a gate file.', '```json', review_path.read_text(), '```'])
+          else:
+              segment.append('The gate failed before producing structured output.')
+          segment.extend(['', end])
+          body_path.write_text(body.rstrip() + '\n\n' + '\n'.join(segment) + '\n')
+          PY
+          gh pr edit "$PR_NUMBER" --body-file .tmp/pr-body.md
       - name: Upload gate evidence
         if: always()
         uses: actions/upload-artifact@v4
