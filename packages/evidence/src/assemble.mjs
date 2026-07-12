@@ -18,7 +18,7 @@ function explicitConflictGroups(items) {
 }
 
 export function assembleEvidence(results, options = {}) {
-  const { maxItems = 5, maxChars = 12_000, minimumScore = 0.018 } = options;
+  const { maxItems = 8, maxChars = 24_000, minimumScore = 0.018 } = options;
   const selected = [];
   const seen = new Set();
   let chars = 0;

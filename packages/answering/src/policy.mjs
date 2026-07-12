@@ -15,7 +15,9 @@ const UNSAFE_PATTERNS = [
   /bypass.*allowed[- ]domain/i,
   /widget credential/i,
   /retrieve cloud credentials/i,
-  /secret token.*maintainers|maintainers.*secret token/i
+  /secret token.*maintainers|maintainers.*secret token/i,
+  /system prompt|hidden instructions/i,
+  /cloud credentials|allowed[- ]domain/i
 ];
 const OUT_OF_SCOPE_PATTERNS = [
   /\bguarantee\b.*\bsecure\b/i,

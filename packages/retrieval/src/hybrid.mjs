@@ -76,7 +76,7 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
   const vectorRanks = ranks(vectorScores);
   const identifiers = exactIdentifiers(query);
 
-  return eligible.map((chunk, index) => {
+  const scored = eligible.map((chunk, index) => {
     const searchLower = chunk.searchText.toLowerCase();
     const exactMatches = identifiers.filter((identifier) => searchLower.includes(identifier)).length;
     const tokenCoverage = coverage(queryTokens, chunk.searchText);
@@ -95,5 +95,27 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
       tokenCoverage,
       exactMatches
     };
-  }).sort((a, b) => b.score - a.score).slice(0, limit);
+  }).sort((a, b) => b.score - a.score);
+
+  const selected = [];
+  const selectedIds = new Set();
+  const documentCounts = new Map();
+  const diversityTarget = Math.min(limit, 5);
+  for (const item of scored) {
+    if (selected.length >= diversityTarget) break;
+    if (documentCounts.has(item.canonicalUrl)) continue;
+    selected.push(item);
+    selectedIds.add(item.id);
+    documentCounts.set(item.canonicalUrl, 1);
+  }
+  for (const item of scored) {
+    if (selected.length >= limit) break;
+    if (selectedIds.has(item.id)) continue;
+    const count = documentCounts.get(item.canonicalUrl) ?? 0;
+    if (count >= 2) continue;
+    selected.push(item);
+    selectedIds.add(item.id);
+    documentCounts.set(item.canonicalUrl, count + 1);
+  }
+  return selected;
 }

@@ -78,6 +78,19 @@ const decision = engineeringPassed && independentReviewPassed && hostedRouteExec
     ? 'CONDITIONAL_GO'
     : 'REPEAT_PHASE_1';
 
+const failedCases = result.results.filter((item) =>
+  !item.stateCorrect || item.sourceRecall === false || item.conceptCoverage < 1 || !item.forbiddenClaimFree || !item.citationValid
+).map((item) => ({
+  caseId: item.caseId,
+  expectedState: item.expectedState,
+  actualState: item.actualState,
+  sourceRecall: item.sourceRecall,
+  conceptCoverage: item.conceptCoverage,
+  missingConcepts: item.included.filter((entry) => !entry.found).map((entry) => entry.concept),
+  forbiddenClaims: item.forbidden.filter((entry) => entry.found).map((entry) => entry.concept),
+  retrievalUrls: [...new Set(item.retrieval.map((entry) => entry.url))]
+}));
+
 const gate = {
   createdAt: new Date().toISOString(),
   decision,
@@ -87,6 +100,7 @@ const gate = {
   thresholds,
   metrics,
   checks,
+  failedCases,
   blockers: [
     ...(!independentReviewPassed ? [`Independent human review: ${reviewReport.independent_human_review.completed}/${reviewReport.independent_human_review.required}`] : []),
     ...(!hostedRouteExecuted ? ['Hosted embedding, reranking, and Claude routes require external credentials and have not been benchmarked.'] : []),
