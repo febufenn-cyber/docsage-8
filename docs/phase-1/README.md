@@ -1,6 +1,8 @@
 # Phase 1 — Truth Engine
 
-Status: **engineering gate implemented; hosted-production and independent-review gates remain explicit**.
+Status: **keyless engineering gate passed; hosted-production and independent-review gates remain explicit**.
+
+Phase 0 is merged into `main`, and this Phase 1 branch is retargeted to `main` for final integration. The latest pinned Hono gate completed with 76/76 cases passing and no failed cases.
 
 ## What this branch adds
 
