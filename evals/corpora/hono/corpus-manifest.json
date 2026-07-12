@@ -1,0 +1,42 @@
+{
+  "corpus_id": "hono-2026-07-12",
+  "project_id": "hono",
+  "pinned_at": "2026-07-12",
+  "repositories": [
+    {
+      "repository": "honojs/website",
+      "commit": "bad29e3d87b8509f8a2982084dc29e9ba098549d",
+      "purpose": "Official hono.dev documentation source"
+    },
+    {
+      "repository": "honojs/hono",
+      "commit": "d3f97caa29bba1f1ae31a4e023c25224aa2a4261",
+      "purpose": "Official framework repository"
+    }
+  ],
+  "documents": [
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/index.md","blob_sha":"d5b406eacb20bbb184eec8bd9ac52af4c2f5e1d3","canonical_url":"https://hono.dev/docs/","title":"Hono","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/getting-started/basic.md","blob_sha":"14f21d2e27791db2cfa939e4387c8667e1ef9649","canonical_url":"https://hono.dev/docs/getting-started/basic","title":"Getting Started","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/getting-started/cloudflare-workers.md","blob_sha":"5a7bc5c4f1bc26aa2f7d8347917df1c941352941","canonical_url":"https://hono.dev/docs/getting-started/cloudflare-workers","title":"Cloudflare Workers","authority_level":2,"version":"current","runtime":"cloudflare-workers"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/api/routing.md","blob_sha":"342a0459c8fee23ce3911a775f167a98e8dcbdc8","canonical_url":"https://hono.dev/docs/api/routing","title":"Routing","authority_level":1,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/api/hono.md","blob_sha":"62231473500e854c8a6983ee5fda471f056e0dd2","canonical_url":"https://hono.dev/docs/api/hono","title":"App - Hono","authority_level":1,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/api/context.md","blob_sha":"1832fa5756aaaa5727417241aa7981d9a3f375b7","canonical_url":"https://hono.dev/docs/api/context","title":"Context","authority_level":1,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/guides/middleware.md","blob_sha":"e18e77b0ebe67c83972898347ff90abf14c17acd","canonical_url":"https://hono.dev/docs/guides/middleware","title":"Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/basic-auth.md","blob_sha":"eb6a5e28076797c45e9e02486c68c8b4d82d1485","canonical_url":"https://hono.dev/docs/middleware/builtin/basic-auth","title":"Basic Auth Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/bearer-auth.md","blob_sha":"3303db591dbf4a65e55be42c0aa6ac8d209714b7","canonical_url":"https://hono.dev/docs/middleware/builtin/bearer-auth","title":"Bearer Auth Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/body-limit.md","blob_sha":"4bf9bf0088b6f96b05c175eebbfd66d8c6eedf18","canonical_url":"https://hono.dev/docs/middleware/builtin/body-limit","title":"Body Limit Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/cors.md","blob_sha":"84b7c7dad6fa1d1d53873ea63c18df7fd3fa36d7","canonical_url":"https://hono.dev/docs/middleware/builtin/cors","title":"CORS Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/jwt.md","blob_sha":"c71306e5836e2bed91863c6bbaf74e98a806b137","canonical_url":"https://hono.dev/docs/middleware/builtin/jwt","title":"JWT Auth Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/request-id.md","blob_sha":"99f80597d4902533544f43057e6a93ec6fa84113","canonical_url":"https://hono.dev/docs/middleware/builtin/request-id","title":"Request ID Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/secure-headers.md","blob_sha":"206d57d2886f60c0a6c5a2f84cc77a2f1b0791a7","canonical_url":"https://hono.dev/docs/middleware/builtin/secure-headers","title":"Secure Headers Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/middleware/builtin/timeout.md","blob_sha":"9d1c1f891e6e6a665f74158e4eeac7e67be3bc63","canonical_url":"https://hono.dev/docs/middleware/builtin/timeout","title":"Timeout Middleware","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/helpers/cookie.md","blob_sha":"14b00f5f1f7fbd50da1addf62d9ca1394e9a68c7","canonical_url":"https://hono.dev/docs/helpers/cookie","title":"Cookie Helper","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/helpers/streaming.md","blob_sha":"66120e59be414b3a3bb55c00a2413aec378fdcdc","canonical_url":"https://hono.dev/docs/helpers/streaming","title":"Streaming Helper","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/helpers/websocket.md","blob_sha":"9bb5843fd6b1ff04736d52ded3693b98863de19f","canonical_url":"https://hono.dev/docs/helpers/websocket","title":"WebSocket Helper","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/guides/testing.md","blob_sha":"127b8dc690f51374a23336759c1ad982f17b5dab","canonical_url":"https://hono.dev/docs/guides/testing","title":"Testing","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/guides/validation.md","blob_sha":"e24a20ad995ad36de7975cf83a89f00b8fce92a8","canonical_url":"https://hono.dev/docs/guides/validation","title":"Validation","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/guides/rpc.md","blob_sha":"d947b0223b9a9da0f13dcc4d1997fbf01dccf1ac","canonical_url":"https://hono.dev/docs/guides/rpc","title":"RPC","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/website","commit":"bad29e3d87b8509f8a2982084dc29e9ba098549d","path":"docs/guides/best-practices.md","blob_sha":"cccd045af67dfaf5ebe8ea22d879f49bb4c59341","canonical_url":"https://hono.dev/docs/guides/best-practices","title":"Best Practices","authority_level":2,"version":"current","runtime":"all"},
+    {"repository":"honojs/hono","commit":"d3f97caa29bba1f1ae31a4e023c25224aa2a4261","path":"README.md","blob_sha":"18ea698aaed3dd7286b25eb6653257e5a450b461","canonical_url":"https://github.com/honojs/hono","title":"Hono repository README","authority_level":4,"version":"current","runtime":"all"}
+  ]
+}

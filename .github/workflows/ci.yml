@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --ignore-scripts
+      - run: npm run check
+      - run: npm run demo
+
+  hono-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --ignore-scripts
+      - name: Run pinned Hono engineering gate
+        shell: bash
+        run: |
+          mkdir -p .tmp
+          set +e
+          npm run gate:hono 2>&1 | tee .tmp/hono-gate.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > .tmp/hono-gate.exit
+          exit "$status"
+      - name: Publish latest gate diagnostic in PR body
+        if: always() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          gh pr view "$PR_NUMBER" --json body --jq .body > .tmp/pr-body.md
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          start = '<!-- docsage-phase1-gate:start -->'
+          end = '<!-- docsage-phase1-gate:end -->'
+          body_path = Path('.tmp/pr-body.md')
+          body = body_path.read_text()
+          if start in body and end in body:
+              before, rest = body.split(start, 1)
+              _, after = rest.split(end, 1)
+              body = before.rstrip() + '\n\n' + after.lstrip()
+
+          gate_path = Path('.tmp/hono-eval/gate.json')
+          review_path = Path('.tmp/hono-benchmark/review-report.json')
+          segment = [start, '## Latest Phase 1 pinned Hono gate', '']
+          if gate_path.exists():
+              gate = json.loads(gate_path.read_text())
+              segment.extend([
+                  f"**Decision:** `{gate['decision']}`  ",
+                  f"**Engineering passed:** `{gate['engineeringPassed']}`  ",
+                  f"**Run SHA:** `{os.environ.get('GITHUB_SHA', 'unknown')}`",
+                  '',
+                  '```json',
+                  json.dumps(gate, indent=2),
+                  '```'
+              ])
+          elif review_path.exists():
+              segment.extend(['Evaluation did not produce a gate file.', '```json', review_path.read_text(), '```'])
+          else:
+              segment.append('The gate failed before producing structured output.')
+          segment.extend(['', end])
+          body_path.write_text(body.rstrip() + '\n\n' + '\n'.join(segment) + '\n')
+          PY
+          gh pr edit "$PR_NUMBER" --body-file .tmp/pr-body.md
+      - name: Upload gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-1-hono-gate
+          if-no-files-found: warn
+          path: |
+            .tmp/hono-gate.log
+            .tmp/hono-gate.exit
+            .tmp/hono-corpus/corpus-lock.json
+            .tmp/hono-benchmark/review-report.json
+            .tmp/hono-benchmark/verified.jsonl
+            .tmp/hono-eval/manifest.json
+            .tmp/hono-eval/metrics.json
+            .tmp/hono-eval/results.jsonl
+            .tmp/hono-eval/report.md
+            .tmp/hono-eval/gate.json
