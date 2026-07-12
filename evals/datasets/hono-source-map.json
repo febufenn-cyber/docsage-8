@@ -1,0 +1,221 @@
+{
+  "corpus_id": "hono-phase0",
+  "purpose": "Engineering benchmark only; no affiliation or commercial relationship implied.",
+  "reviewed_on": "2026-07-12",
+  "pinning_status": "un-pinned",
+  "required_before_phase1_gate": [
+    "Record exact crawl timestamp and content hashes.",
+    "Record honojs/hono commit SHA.",
+    "Review every candidate evaluation case.",
+    "Freeze an immutable corpus manifest."
+  ],
+  "sources": [
+    {
+      "id": "docs-home",
+      "url": "https://hono.dev/docs/",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "getting-started",
+      "url": "https://hono.dev/docs/getting-started/basic",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "cloudflare-workers",
+      "url": "https://hono.dev/docs/getting-started/cloudflare-workers",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "cloudflare-workers",
+      "active": true
+    },
+    {
+      "id": "app-api",
+      "url": "https://hono.dev/docs/api/hono",
+      "source_type": "official_api",
+      "authority_level": 1,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "routing-api",
+      "url": "https://hono.dev/docs/api/routing",
+      "source_type": "official_api",
+      "authority_level": 1,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "context-api",
+      "url": "https://hono.dev/docs/api/context",
+      "source_type": "official_api",
+      "authority_level": 1,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "middleware-guide",
+      "url": "https://hono.dev/docs/guides/middleware",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "testing-guide",
+      "url": "https://hono.dev/docs/guides/testing",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "validation-guide",
+      "url": "https://hono.dev/docs/guides/validation",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "rpc-guide",
+      "url": "https://hono.dev/docs/guides/rpc",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "best-practices",
+      "url": "https://hono.dev/docs/guides/best-practices",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "basic-auth",
+      "url": "https://hono.dev/docs/middleware/builtin/basic-auth",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "bearer-auth",
+      "url": "https://hono.dev/docs/middleware/builtin/bearer-auth",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "body-limit",
+      "url": "https://hono.dev/docs/middleware/builtin/body-limit",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "cors",
+      "url": "https://hono.dev/docs/middleware/builtin/cors",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "jwt",
+      "url": "https://hono.dev/docs/middleware/builtin/jwt",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "request-id",
+      "url": "https://hono.dev/docs/middleware/builtin/request-id",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "secure-headers",
+      "url": "https://hono.dev/docs/middleware/builtin/secure-headers",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "timeout",
+      "url": "https://hono.dev/docs/middleware/builtin/timeout",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "cookie-helper",
+      "url": "https://hono.dev/docs/helpers/cookie",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "streaming-helper",
+      "url": "https://hono.dev/docs/helpers/streaming",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "all",
+      "active": true
+    },
+    {
+      "id": "websocket-helper",
+      "url": "https://hono.dev/docs/helpers/websocket",
+      "source_type": "official_docs",
+      "authority_level": 2,
+      "version_scope": "current",
+      "runtime_scope": "runtime-specific",
+      "active": true
+    },
+    {
+      "id": "github-repo",
+      "url": "https://github.com/honojs/hono",
+      "source_type": "official_repository",
+      "authority_level": 4,
+      "version_scope": "main",
+      "runtime_scope": "all",
+      "active": true
+    }
+  ]
+}

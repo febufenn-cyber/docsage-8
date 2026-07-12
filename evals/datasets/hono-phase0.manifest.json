@@ -1,0 +1,29 @@
+{
+  "dataset_id": "hono-phase0",
+  "case_count": 76,
+  "annotation_status": "candidate",
+  "schema": "../schemas/evaluation-case.schema.json",
+  "source_map": "hono-source-map.json",
+  "shards": [
+    {
+      "path": "hono-phase0/part-01.jsonl",
+      "cases": 19,
+      "sha256": "929c4289927291a11a18603f6b47f873e2091be746ff63da880c2126fae03382"
+    },
+    {
+      "path": "hono-phase0/part-02.jsonl",
+      "cases": 19,
+      "sha256": "a07919b5ad6dab89699392c9054b55e22b4f813377fa75026f6106a296bed7a7"
+    },
+    {
+      "path": "hono-phase0/part-03.jsonl",
+      "cases": 19,
+      "sha256": "ce53c035400baf96190bcd573f6f00ab02b9025ad3f289992d38f6b363f99eb5"
+    },
+    {
+      "path": "hono-phase0/part-04.jsonl",
+      "cases": 19,
+      "sha256": "d017f3a93052abeadd3503c777088a6acee34b07cd9767d94f824c55595467e4"
+    }
+  ]
+}
