@@ -3,7 +3,7 @@ export class ExtractiveProvider {
 
   async generate({ evidence }) {
     if (!evidence.length) return { answer: '', claims: [], variableCostUsd: 0 };
-    const selected = evidence.slice(0, 8).map((item) => ({
+    const selected = evidence.slice(0, 12).map((item) => ({
       text: (item.searchText ?? item.displayText).trim(),
       evidenceIds: [item.id]
     })).filter((claim) => claim.text.length > 0);

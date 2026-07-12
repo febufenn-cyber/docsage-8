@@ -23,7 +23,7 @@ export async function answerQuestion(input) {
   const startedAt = performance.now();
   const {
     question, projectId, chunks, version = 'current', runtime = 'all',
-    provider = new ExtractiveProvider(), retrievalLimit = 8
+    provider = new ExtractiveProvider(), retrievalLimit = 12
   } = input;
   const traceId = makeTraceId();
   const classification = classifyQuestion(question);

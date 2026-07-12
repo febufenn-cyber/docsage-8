@@ -84,20 +84,30 @@ function documentSignals(query, eligible, queryTokens) {
   }]));
 }
 
-export function hybridRetrieve({ query, chunks, projectId, version = 'current', runtime = 'all', limit = 8 }) {
+function expandQuery(query) {
+  const additions = [];
+  if (/\b(?:unchanged|identical|universal(?:ly)?|every runtime|all runtimes?)\b/i.test(query)) additions.push('runtime platform exact platform entry point adapter');
+  if (/\btests?\b/i.test(query)) additions.push('testing app.request request helper');
+  if (/authorization.*header|header.*authorization/i.test(query)) additions.push('Bearer token prefix headerName');
+  if (/\bwildcards?\b/i.test(query)) additions.push('wildcards asterisk star route');
+  return additions.length ? `${query} ${additions.join(' ')}` : query;
+}
+
+export function hybridRetrieve({ query, chunks, projectId, version = 'current', runtime = 'all', limit = 12 }) {
   const eligible = chunks.filter((chunk) => chunk.projectId === projectId && chunk.active !== false)
     .filter((chunk) => !version || chunk.version === version || chunk.version === 'all')
     .filter((chunk) => runtime === 'all' || chunk.runtime === 'all' || chunk.runtime === runtime);
   if (!eligible.length) return [];
 
-  const queryTokens = tokenize(query);
+  const expandedQuery = expandQuery(query);
+  const queryTokens = tokenize(expandedQuery);
   const documentTokens = eligible.map((chunk) => tokenize(chunk.searchText));
   const keywordScores = bm25(queryTokens, documentTokens);
-  const queryVector = hashEmbedding(query);
+  const queryVector = hashEmbedding(expandedQuery);
   const vectorScores = eligible.map((chunk) => cosine(queryVector, hashEmbedding(chunk.searchText)));
   const keywordRanks = ranks(keywordScores);
   const vectorRanks = ranks(vectorScores);
-  const documentScores = documentSignals(query, eligible, queryTokens);
+  const documentScores = documentSignals(expandedQuery, eligible, queryTokens);
   const identifiers = exactIdentifiers(query);
 
   const scored = eligible.map((chunk, index) => {
@@ -108,7 +118,7 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
     const authorityBonus = Math.max(0, 5 - (chunk.authorityLevel ?? 5)) * 0.001;
     const exactBonus = exactMatches * 0.04;
     const coverageBonus = tokenCoverage * 0.035;
-    const structureBonus = phraseSignals(query, chunk);
+    const structureBonus = phraseSignals(expandedQuery, chunk);
     const document = documentScores.get(chunk.canonicalUrl);
     return {
       ...chunk,
@@ -127,7 +137,7 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
   const selected = [];
   const selectedIds = new Set();
   const documentCounts = new Map();
-  const diversityTarget = Math.min(limit, 4);
+  const diversityTarget = Math.min(limit, 5);
   for (const item of scored) {
     if (selected.length >= diversityTarget) break;
     if (documentCounts.has(item.canonicalUrl)) continue;
@@ -139,7 +149,7 @@ export function hybridRetrieve({ query, chunks, projectId, version = 'current', 
     if (selected.length >= limit) break;
     if (selectedIds.has(item.id)) continue;
     const count = documentCounts.get(item.canonicalUrl) ?? 0;
-    if (count >= 3) continue;
+    if (count >= 5) continue;
     selected.push(item);
     selectedIds.add(item.id);
     documentCounts.set(item.canonicalUrl, count + 1);
