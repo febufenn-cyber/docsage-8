@@ -22,6 +22,27 @@ jobs:
       - run: npm run check
       - run: npm run demo
 
+  widget-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --ignore-scripts
+      - name: Run Phase 2 widget gate
+        run: npm run gate:widget
+      - name: Upload widget gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-2-widget-gate
+          if-no-files-found: error
+          path: |
+            .tmp/widget-gate/gate.json
+            .tmp/widget-gate/report.md
+
   hono-gate:
     runs-on: ubuntu-latest
     steps:
