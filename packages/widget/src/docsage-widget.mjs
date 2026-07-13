@@ -1,7 +1,9 @@
 import {
   buildAnswerRequest,
+  buildFeedbackRequest,
   normalizeAnswerPayload,
   normalizeEndpoint,
+  normalizeFeedbackResponse,
   normalizePublicError,
   normalizeWidgetConfig
 } from './contracts.mjs';
@@ -135,6 +137,25 @@ button, textarea { font: inherit; }
 .citations { margin: 12px 0 0; padding-left: 20px; }
 .citations li + li { margin-top: 6px; }
 .citations a { color: var(--docsage-accent); }
+.feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+  color: var(--docsage-muted);
+  font-size: 12px;
+}
+.feedback button {
+  min-height: 32px;
+  border: 1px solid var(--docsage-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  color: var(--docsage-text);
+  background: transparent;
+  cursor: pointer;
+}
+.feedback button:disabled { cursor: wait; opacity: 0.6; }
 .form {
   border-top: 1px solid var(--docsage-border);
   padding: 12px;
@@ -210,6 +231,7 @@ export class DocSageWidget extends HTMLElement {
     this._busy = false;
     this._controller = null;
     this._config = normalizeWidgetConfig();
+    this._feedbackEvents = new Map();
   }
 
   connectedCallback() {
@@ -377,6 +399,19 @@ export class DocSageWidget extends HTMLElement {
     this._appendMessage(node);
   }
 
+  _feedbackControls(answer) {
+    if (!answer.traceId) return null;
+    const controls = element('div', { className: 'feedback', attributes: { 'aria-label': 'Answer feedback' } });
+    const prompt = element('span', { text: 'Was this useful?' });
+    const useful = element('button', { text: 'Yes', attributes: { type: 'button', 'aria-label': 'Mark answer useful' } });
+    const notUseful = element('button', { text: 'No', attributes: { type: 'button', 'aria-label': 'Mark answer not useful' } });
+    const buttons = [useful, notUseful];
+    useful.addEventListener('click', () => this._sendFeedback(answer, 'useful', controls, buttons));
+    notUseful.addEventListener('click', () => this._sendFeedback(answer, 'not_useful', controls, buttons));
+    controls.append(prompt, useful, notUseful);
+    return controls;
+  }
+
   _answerMessage(answer) {
     const node = element('article', { className: 'message assistant' });
     node.append(element('span', { className: 'state', text: answer.stateLabel }));
@@ -394,8 +429,59 @@ export class DocSageWidget extends HTMLElement {
       }
       node.append(list);
     }
+    const feedback = this._feedbackControls(answer);
+    if (feedback) node.append(feedback);
     node.dataset.traceId = answer.traceId;
     this._appendMessage(node);
+  }
+
+  async _sendFeedback(answer, rating, controls, buttons) {
+    const key = `${answer.traceId}:${rating}`;
+    const eventId = this._feedbackEvents.get(key) || crypto.randomUUID();
+    this._feedbackEvents.set(key, eventId);
+    let payload;
+    try {
+      payload = buildFeedbackRequest({ eventId, traceId: answer.traceId, rating });
+    } catch (error) {
+      this._setStatus(error.message);
+      return;
+    }
+    buttons.forEach((button) => { button.disabled = true; });
+    this._setStatus('Sending feedback…');
+    try {
+      const response = await fetch(this._apiUrl('feedback'), {
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${this.token}`,
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(payload),
+        credentials: 'omit',
+        cache: 'no-store',
+        referrerPolicy: 'no-referrer'
+      });
+      const body = await readJson(response);
+      if (!response.ok) {
+        const publicError = normalizePublicError(body);
+        throw Object.assign(new Error(publicError.message), { publicError });
+      }
+      const result = normalizeFeedbackResponse(body);
+      controls.replaceChildren(element('span', { text: result.duplicate ? 'Feedback already received.' : 'Thanks for the feedback.' }));
+      this._setStatus('Feedback received.');
+      this.dispatchEvent(new CustomEvent('docsage:feedback', {
+        detail: { traceId: answer.traceId, rating, accepted: true, duplicate: result.duplicate },
+        bubbles: true,
+        composed: true
+      }));
+    } catch (error) {
+      buttons.forEach((button) => { button.disabled = false; });
+      this._setStatus(error?.message || 'Feedback could not be sent.');
+      this.dispatchEvent(new CustomEvent('docsage:error', {
+        detail: { code: error?.publicError?.code || 'FEEDBACK_FAILED', retryable: true },
+        bubbles: true,
+        composed: true
+      }));
+    }
   }
 
   async _submit(event) {

@@ -8,6 +8,8 @@ export function createSingleProjectWidgetRuntime(options) {
     chunks,
     provider,
     rateLimiter = new MemoryRateLimiter(),
+    feedbackRateLimiter,
+    feedbackStore,
     limits
   } = options ?? {};
   if (!project?.id) throw new TypeError('A single public project is required');
@@ -16,6 +18,8 @@ export function createSingleProjectWidgetRuntime(options) {
   return createWidgetApp({
     tokenSecret,
     rateLimiter,
+    feedbackRateLimiter,
+    feedbackStore,
     limits,
     projectResolver: async (projectId) => projectId === project.id ? project : null,
     answerService: async ({ question, projectId }) => answerQuestion({

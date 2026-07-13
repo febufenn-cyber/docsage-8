@@ -5,6 +5,7 @@ import {
   issueWidgetToken,
   verifyWidgetToken,
   isOriginAllowed,
+  MemoryFeedbackStore,
   MemoryRateLimiter
 } from '../packages/widget-api/src/index.mjs';
 
@@ -138,6 +139,45 @@ test('rate limits by project, origin, and client key', async () => {
   assert.equal(blocked.headers.get('retry-after'), '60');
   assert.equal((await blocked.json()).error.code, 'RATE_LIMITED');
   assert.equal((await widgetApp(make(), { clientKey: 'other-client' })).status, 200);
+});
+
+test('records bounded feedback idempotently', async () => {
+  const store = new MemoryFeedbackStore({ now: () => 1_700_000_000_000 });
+  const widgetApp = app({ feedbackStore: store });
+  const widgetToken = await token();
+  const payload = {
+    eventId: '11111111-1111-4111-8111-111111111111',
+    traceId: 'run_widget_test',
+    rating: 'useful',
+    reason: 'clear_answer'
+  };
+  const make = () => request('/v1/widget/feedback', widgetToken, { method: 'POST', body: payload });
+  const first = await widgetApp(make(), { clientKey: 'client-1' });
+  assert.equal(first.status, 202);
+  assert.deepEqual(await first.json(), { accepted: true, duplicate: false });
+  const second = await widgetApp(make(), { clientKey: 'client-1' });
+  assert.equal(second.status, 200);
+  assert.deepEqual(await second.json(), { accepted: true, duplicate: true });
+  const entries = await store.list();
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].projectId, 'project_demo');
+  assert.equal(entries[0].origin, 'https://docs.example.com');
+  assert.equal(entries[0].comment, null);
+});
+
+test('rejects invalid or unexpected free-text feedback', async () => {
+  const response = await app()(request('/v1/widget/feedback', await token(), {
+    method: 'POST',
+    body: {
+      eventId: '22222222-2222-4222-8222-222222222222',
+      traceId: 'run_widget_test',
+      rating: 'useful',
+      reason: 'clear_answer',
+      comment: 'Unexpected personal data'
+    }
+  }));
+  assert.equal(response.status, 400);
+  assert.equal((await response.json()).error.code, 'FEEDBACK_INVALID');
 });
 
 test('preflight returns no data and actual requests remain token and origin protected', async () => {

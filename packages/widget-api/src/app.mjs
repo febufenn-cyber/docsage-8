@@ -1,6 +1,7 @@
 import { assertOriginAllowed, normalizeOrigin, OriginPolicyError } from './origin.mjs';
 import { readBearerToken, verifyWidgetToken, WidgetTokenError } from './token.mjs';
 import { MemoryRateLimiter, rateLimitHeaders } from './rate-limit.mjs';
+import { MemoryFeedbackStore, validateFeedback } from './feedback.mjs';
 
 const PUBLIC_STATES = new Set([
   'supported', 'partially_supported', 'conflicting_sources', 'version_ambiguous',
@@ -53,6 +54,7 @@ function publicError(error) {
     return ['BAD_REQUEST', 'The request origin is invalid.', 400, false];
   }
   if (error?.code === 'BAD_REQUEST') return ['BAD_REQUEST', error.message, 400, false];
+  if (error?.code === 'FEEDBACK_INVALID') return ['FEEDBACK_INVALID', error.message, 400, false];
   if (error?.code === 'ANSWER_UNAVAILABLE') return ['ANSWER_UNAVAILABLE', 'The documentation answer is temporarily unavailable.', 503, true];
   return ['INTERNAL_ERROR', 'The request could not be completed.', 500, true];
 }
@@ -100,6 +102,12 @@ function validateQuestion(value, maxCharacters) {
   return question;
 }
 
+function clientKey(context) {
+  return typeof context.clientKey === 'string' && context.clientKey
+    ? context.clientKey.slice(0, 200)
+    : 'anonymous';
+}
+
 function safeCitation(item) {
   if (!item || typeof item !== 'object') return null;
   let url;
@@ -141,13 +149,18 @@ export function createWidgetApp(options) {
     projectResolver,
     answerService,
     rateLimiter = new MemoryRateLimiter(),
+    feedbackRateLimiter = new MemoryRateLimiter({ limit: 60, windowMs: 300_000 }),
+    feedbackStore = new MemoryFeedbackStore(),
     limits = {}
   } = options ?? {};
   if (typeof projectResolver !== 'function') throw new TypeError('projectResolver is required');
   if (typeof answerService !== 'function') throw new TypeError('answerService is required');
+  if (!feedbackStore || typeof feedbackStore.record !== 'function') throw new TypeError('feedbackStore.record is required');
   const maxBodyBytes = limits.maxBodyBytes ?? 8192;
   const maxQuestionCharacters = limits.maxQuestionCharacters ?? 1000;
   const maxPageUrlCharacters = limits.maxPageUrlCharacters ?? 2048;
+  const maxFeedbackCommentCharacters = limits.maxFeedbackCommentCharacters ?? 500;
+  const allowFeedbackComment = limits.allowFeedbackComment === true;
 
   return async function handleWidgetRequest(request, context = {}) {
     const id = requestId();
@@ -199,10 +212,7 @@ export function createWidgetApp(options) {
         const body = await readJsonBody(request, maxBodyBytes);
         const question = validateQuestion(body?.question, maxQuestionCharacters);
         const pageUrl = validatePageUrl(body?.pageUrl, maxPageUrlCharacters);
-        const clientKey = typeof context.clientKey === 'string' && context.clientKey
-          ? context.clientKey.slice(0, 200)
-          : 'anonymous';
-        const limitResult = await rateLimiter.consume(`${project.id}|${origin}|${clientKey}`);
+        const limitResult = await rateLimiter.consume(`${project.id}|${origin}|${clientKey(context)}|answer`);
         if (!limitResult.allowed) {
           return errorResponse(
             'RATE_LIMITED',
@@ -227,6 +237,39 @@ export function createWidgetApp(options) {
           throw Object.assign(new Error('Answer service failed.', { cause }), { code: 'ANSWER_UNAVAILABLE' });
         }
         return json(sanitizeAnswer(answer, id), 200, id, origin, rateLimitHeaders(limitResult));
+      }
+
+      if (request.method === 'POST' && url.pathname === '/v1/widget/feedback') {
+        const body = await readJsonBody(request, maxBodyBytes);
+        const feedback = validateFeedback(body, {
+          allowComment: allowFeedbackComment,
+          maxCommentCharacters: maxFeedbackCommentCharacters
+        });
+        const limitResult = await feedbackRateLimiter.consume(`${project.id}|${origin}|${clientKey(context)}|feedback`);
+        if (!limitResult.allowed) {
+          return errorResponse(
+            'RATE_LIMITED',
+            'Too much feedback was submitted. Try again later.',
+            429,
+            id,
+            origin,
+            true,
+            rateLimitHeaders(limitResult)
+          );
+        }
+        const recorded = await feedbackStore.record({
+          ...feedback,
+          projectId: project.id,
+          origin,
+          tokenId: verified.payload.jti
+        });
+        return json(
+          { accepted: recorded.accepted === true, duplicate: recorded.duplicate === true },
+          recorded.duplicate ? 200 : 202,
+          id,
+          origin,
+          rateLimitHeaders(limitResult)
+        );
       }
 
       return errorResponse('NOT_FOUND', 'The requested endpoint does not exist.', 404, id, origin);

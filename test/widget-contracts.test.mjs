@@ -4,8 +4,10 @@ import { readFile } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
 import {
   buildAnswerRequest,
+  buildFeedbackRequest,
   normalizeAnswerPayload,
   normalizeEndpoint,
+  normalizeFeedbackResponse,
   normalizeWidgetConfig,
   safeExternalUrl
 } from '../packages/widget/src/contracts.mjs';
@@ -59,15 +61,32 @@ test('builds bounded answer requests without sending arbitrary page data', () =>
   assert.equal(safeExternalUrl('data:text/plain,test'), null);
 });
 
+test('builds bounded idempotent feedback requests', () => {
+  const eventId = '33333333-3333-4333-8333-333333333333';
+  assert.deepEqual(buildFeedbackRequest({ eventId, traceId: 'run_1', rating: 'useful' }), {
+    eventId,
+    traceId: 'run_1',
+    rating: 'useful',
+    reason: 'clear_answer'
+  });
+  assert.deepEqual(buildFeedbackRequest({ eventId, traceId: 'run_1', rating: 'not_useful' }).reason, 'incomplete');
+  assert.deepEqual(normalizeFeedbackResponse({ accepted: true, duplicate: true }), { accepted: true, duplicate: true });
+  assert.throws(() => buildFeedbackRequest({ eventId: 'bad', traceId: 'run_1', rating: 'useful' }), /event ID/);
+  assert.throws(() => buildFeedbackRequest({ eventId, traceId: 'run_1', rating: 'maybe' }), /rating/);
+  assert.throws(() => normalizeFeedbackResponse({ accepted: false }), /invalid/);
+});
+
 test('widget source uses safe DOM APIs and remains within the Phase 2 size budget', async () => {
   const source = await readFile(new URL('../packages/widget/src/docsage-widget.mjs', import.meta.url), 'utf8');
   assert.match(source, /attachShadow\(\{ mode: 'open' \}\)/);
   assert.match(source, /textContent/);
   assert.match(source, /role: 'dialog'/);
   assert.match(source, /aria-live/);
+  assert.match(source, /docsage:feedback/);
   assert.doesNotMatch(source, /\.innerHTML\s*=/);
   assert.doesNotMatch(source, /\beval\s*\(/);
   assert.doesNotMatch(source, /new\s+Function\b/);
   assert.doesNotMatch(source, /on(?:click|load|error)\s*=/i);
-  assert.ok(gzipSync(source).byteLength <= 40 * 1024, `widget gzip size exceeded: ${gzipSync(source).byteLength}`);
+  const gzipBytes = gzipSync(source).byteLength;
+  assert.ok(gzipBytes <= 40 * 1024, `widget gzip size exceeded: ${gzipBytes}`);
 });

@@ -12,7 +12,7 @@ question → grounded answer → failure classification → documentation gap �
 
 - **Phase 0:** merged into `main`.
 - **Phase 1:** truth engine and pinned Hono engineering gate merged into `main`.
-- **Phase 2:** single-project widget contract frozen; implementation in progress.
+- **Phase 2:** single-project widget engineering gate passed; public pilot remains incomplete.
 
 Start here:
 
@@ -20,6 +20,7 @@ Start here:
 - [Phase 1 index](docs/phase-1/README.md)
 - [Phase 2 index](docs/phase-2/README.md)
 - [Widget API contract](docs/phase-2/widget-api.md)
+- [Widget embed guide](docs/phase-2/embed.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
 - [Threat model](docs/phase-0/threat-model.md)
 - [Model routing decision](docs/phase-1/model-routing.md)
@@ -78,18 +79,42 @@ The hosted models require external credentials and are not confused with the key
 
 ## Phase 2 product slice
 
-The first embeddable widget is intentionally narrow:
+The embeddable widget now includes:
 
 - one public project and active corpus;
 - signed public widget tokens;
-- explicit origin allowlists;
-- bounded answer and feedback APIs;
-- rate limiting;
+- explicit exact and wildcard origin allowlists;
+- bounded config, answer, and feedback APIs;
+- separate answer and feedback rate limiting;
 - accessible Shadow DOM UI;
-- citations, useful refusals, and useful/not-useful feedback;
-- deterministic local demo and release gate.
+- citations and useful refusal states;
+- controlled useful/not-useful feedback;
+- idempotent feedback events;
+- light, dark, and automatic themes;
+- a dependency-free local demo;
+- a machine-readable widget gate and CI artifact.
 
-It does not introduce billing, private sources, multi-project administration, end-user accounts, autonomous actions, or production-readiness claims for the unexecuted hosted-model route.
+Reference Phase 2 gate result:
+
+```text
+Decision: CONDITIONAL_GO
+Engineering checks: all passed
+Widget gzip size: 5,136 bytes
+Forbidden source patterns: 0
+Answer state: supported
+Safe citations: 8
+Refusal state: account_specific
+Feedback entries after duplicate submission: 1
+```
+
+Run:
+
+```bash
+npm run demo:widget
+npm run gate:widget
+```
+
+Phase 2 does not introduce billing, private sources, multi-project administration, end-user accounts, autonomous actions, or production-readiness claims for the unexecuted hosted-model route.
 
 ## Product wedge
 
@@ -106,7 +131,7 @@ The first release is read-only and public-source-only. Private repositories, acc
 
 1. **Phase 0 — Position and benchmark:** merged.
 2. **Phase 1 — Truth engine:** merged with a pinned engineering gate; external gates remain explicit.
-3. **Phase 2 — Single-project widget:** contract frozen; API, widget, feedback, and gate implementation underway.
+3. **Phase 2 — Single-project widget:** engineering gate passed; public pilot pending.
 4. **Phase 3 — Learning console:** failure triage, unanswered clusters, source health.
 5. **Phase 4 — Reliable ingestion:** revisions, incremental refresh, deletions, retries, version awareness.
 6. **Phase 5 — Commercial foundation:** organizations, RLS, usage, billing, deletion, auditability.
