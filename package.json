@@ -9,12 +9,14 @@
     "check": "npm run validate:evals && npm test",
     "validate:evals": "node scripts/validate-evals.mjs",
     "demo": "node apps/cli/src/main.mjs demo",
+    "demo:widget": "node apps/widget/demo/server.mjs",
     "ask": "node apps/cli/src/main.mjs ask",
     "eval:mini": "node apps/cli/src/main.mjs eval --allow-candidate",
     "corpus:mini": "node scripts/build-mini-corpus.mjs",
     "corpus:hono": "node scripts/fetch-hono-corpus.mjs",
     "verify:hono": "node scripts/materialize-hono-benchmark.mjs",
     "eval:hono": "node scripts/run-hono-gate.mjs",
-    "gate:hono": "npm run corpus:hono && npm run verify:hono && npm run eval:hono"
+    "gate:hono": "npm run corpus:hono && npm run verify:hono && npm run eval:hono",
+    "gate:widget": "node scripts/run-widget-gate.mjs"
   }
 }
