@@ -2,6 +2,9 @@ const STATES = new Set([
   'supported', 'partially_supported', 'conflicting_sources', 'version_ambiguous',
   'runtime_ambiguous', 'not_found', 'account_specific', 'out_of_scope', 'unsafe_or_untrusted'
 ]);
+const FEEDBACK_RATINGS = new Set(['useful', 'not_useful']);
+const FEEDBACK_REASONS = new Set(['clear_answer', 'incomplete', 'incorrect', 'missing_source', 'outdated', 'other']);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export const STATE_LABELS = Object.freeze({
   supported: 'Supported by the documentation',
@@ -107,4 +110,25 @@ export function buildAnswerRequest(question, pageUrl, maxCharacters = 1000) {
   const url = safeExternalUrl(pageUrl);
   if (url) payload.pageUrl = url;
   return payload;
+}
+
+export function buildFeedbackRequest(options = {}) {
+  const {
+    eventId = crypto.randomUUID(),
+    traceId,
+    rating,
+    reason = rating === 'useful' ? 'clear_answer' : 'incomplete'
+  } = options;
+  if (typeof eventId !== 'string' || !UUID.test(eventId)) throw new TypeError('Feedback event ID is invalid');
+  if (typeof traceId !== 'string' || !traceId.trim() || traceId.length > 200) throw new TypeError('Feedback trace ID is invalid');
+  if (!FEEDBACK_RATINGS.has(rating)) throw new TypeError('Feedback rating is invalid');
+  if (!FEEDBACK_REASONS.has(reason)) throw new TypeError('Feedback reason is invalid');
+  return { eventId: eventId.toLowerCase(), traceId: traceId.trim(), rating, reason };
+}
+
+export function normalizeFeedbackResponse(input) {
+  if (!input || typeof input !== 'object' || input.accepted !== true) {
+    throw new TypeError('Feedback response is invalid');
+  }
+  return { accepted: true, duplicate: input.duplicate === true };
 }
