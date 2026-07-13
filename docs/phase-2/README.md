@@ -1,6 +1,6 @@
 # Phase 2 — Single-Project Widget
 
-Status: **contract frozen for implementation**.
+Status: **engineering gate passed; public pilot remains required**.
 
 ## Objective
 
@@ -10,21 +10,25 @@ The forcing question is:
 
 > Can a documentation owner add DocSage to a public site with one embed snippet and receive grounded answers, citations, useful refusals, domain enforcement, rate limiting, and actionable feedback without exposing secrets or weakening the Phase 1 evidence contract?
 
-## Product slice
+The engineering answer is now **yes** for the deterministic reference route. A real public documentation-site pilot has not yet been completed.
 
-The first widget supports:
+## Implemented product slice
 
-- one public project;
-- one active source corpus;
-- one public widget token scoped to that project;
-- an explicit origin allowlist;
-- English questions;
-- grounded answers and answer states;
-- source citations that open in a new tab;
-- useful/not-useful feedback;
-- light and dark themes;
-- keyboard and screen-reader operation;
-- a deterministic local demo and release gate.
+The widget supports:
+
+- one public project and active source corpus;
+- public HMAC-signed widget tokens scoped to a project, origin policy, and lifetime;
+- exact origins and wildcard subdomains without matching the apex;
+- English documentation questions;
+- grounded answers and explicit answer states;
+- HTTP(S)-only source citations;
+- separate answer and feedback rate limits;
+- useful/not-useful feedback with controlled reasons;
+- idempotent feedback writes;
+- light, dark, and automatic themes;
+- keyboard, focus, live-region, and reduced-motion behavior;
+- a dependency-free local demo;
+- a machine-readable release gate and CI artifact.
 
 ## Non-goals
 
@@ -41,11 +45,11 @@ Phase 2 does not include:
 - multilingual retrieval;
 - a production hosted-model quality claim without the Phase 1 external gates.
 
-## Delivery slices
+## Delivered slices
 
 ### 2A — Contract
 
-Freeze:
+Frozen:
 
 - embed contract;
 - public-token model;
@@ -58,39 +62,43 @@ Freeze:
 
 ### 2B — Edge API
 
-Implement:
+Implemented:
 
 - signed, scoped widget tokens;
 - exact and wildcard origin validation;
 - bounded JSON requests;
-- fixed-window rate limiting behind an adapter;
-- answer endpoint integration;
+- fixed-window rate limiting behind adapters;
+- config, answer, and feedback endpoints;
+- Phase 1 truth-engine integration;
 - safe CORS and security headers;
 - stable error envelopes and request IDs.
 
 ### 2C — Widget
 
-Implement a framework-free Web Component that:
+Implemented a framework-free Web Component that:
 
 - uses Shadow DOM;
-- renders all untrusted content with DOM text APIs;
-- shows answer state and citations;
+- renders untrusted content with DOM text APIs;
+- shows answer states and citations;
 - supports keyboard and focus management;
 - exposes CSS custom properties for theming;
-- emits lifecycle events;
+- emits privacy-bounded lifecycle events;
 - never stores secrets or executes retrieved content.
 
-### 2D — Feedback and gate
+### 2D — Feedback, demo, and gate
 
-Implement:
+Implemented:
 
 - useful/not-useful feedback;
-- optional bounded reason text;
+- controlled reason codes;
+- optional free text disabled by default;
 - idempotent feedback writes;
-- demo integration;
+- executable local demo integration;
 - asset-size and unsafe-pattern checks;
-- API and widget contract tests;
-- a Phase 2 review with a measured decision.
+- API, widget, feedback, and demo tests;
+- `npm run gate:widget`;
+- CI artifact publishing;
+- a measured Phase 2 review.
 
 ## Security model
 
@@ -108,7 +116,7 @@ The API independently verifies:
 2. project scope;
 3. request `Origin` against token claims;
 4. request size and schema;
-5. rate-limit allowance;
+5. answer or feedback rate-limit allowance;
 6. response fields before returning them to the browser.
 
 A valid token does not authorize private data, source ingestion, project mutation, billing access, or cross-project retrieval.
@@ -118,45 +126,84 @@ A valid token does not authorize private data, source ingestion, project mutatio
 The default widget sends only:
 
 - current question;
-- current page URL when enabled;
+- current public page URL;
 - public widget token;
-- an optional feedback event tied to a response trace.
+- an optional controlled feedback event tied to a response trace.
 
-It must not send page text, cookies, local storage, form fields, browser history, or DOM content.
+It does not send page text, cookies, local storage, form fields, browser history, DOM content, answer text in lifecycle events, retrieval evidence, prompts, or token claims.
 
 ## UX contract
 
-The widget must:
+The widget:
 
-- remain closed by default;
-- clearly identify itself as documentation assistance;
-- show when it is loading;
-- display useful refusal states without pretending an answer exists;
-- keep citations near the answer;
-- preserve user-entered text when a retryable request fails;
-- provide a close control and restore focus to the launcher;
-- avoid trapping keyboard focus;
-- respect `prefers-reduced-motion`;
-- meet WCAG 2.2 AA contrast and interaction expectations in the default theme.
+- remains closed by default;
+- identifies itself as documentation assistance;
+- shows loading and request status;
+- displays useful refusal states without inventing an answer;
+- keeps citations near the answer;
+- preserves entered text when a retryable request fails;
+- provides a close control and restores focus to the launcher;
+- does not trap keyboard focus;
+- respects `prefers-reduced-motion`;
+- exposes accessible labels and polite live regions.
 
-## Release gates
+A manual browser and screen-reader pilot remains necessary before claiming complete WCAG conformance.
 
-Phase 2 can merge as an engineering slice when:
+## Measured engineering gate
 
-- all API contract tests pass;
-- token tampering, expiration, origin bypass, oversized input, and rate-limit tests pass;
-- no unsafe HTML rendering path is present;
-- citations are restricted to `http:` or `https:` URLs;
-- feedback is bounded and idempotent;
-- widget JavaScript is under 40 KiB gzip;
-- no `eval`, `new Function`, inline event handlers, or untrusted `innerHTML` is used;
-- keyboard and ARIA contract checks pass;
-- the local demo exercises answer, refusal, citation, error, and feedback states;
-- `npm run gate:widget` produces a machine-readable result.
+Reference: GitHub Actions CI run 19, July 13, 2026.
 
-## Decision policy
+```text
+Decision: CONDITIONAL_GO
+Widget raw bytes: 18,809
+Widget gzip bytes: 5,136
+Forbidden source patterns: 0
+Grounded answer state: supported
+Safe citations returned: 8
+Useful refusal state: account_specific
+Feedback records after duplicate submission: 1
+```
+
+All gate checks passed:
+
+- asset size;
+- source safety;
+- accessibility markers;
+- demo assets;
+- config contract;
+- answer and citations;
+- useful refusal;
+- origin enforcement;
+- feedback acceptance;
+- feedback idempotency.
+
+Run locally:
+
+```bash
+npm install
+npm run check
+npm run demo:widget
+npm run gate:widget
+```
+
+Evidence is written to:
+
+```text
+.tmp/widget-gate/gate.json
+.tmp/widget-gate/report.md
+```
+
+## Decision policy and current decision
 
 - `GO_TO_PHASE_3`: all Phase 2 engineering gates pass and pilot deployment evidence exists.
 - `CONDITIONAL_GO`: engineering gates pass but hosted deployment or pilot evidence is incomplete.
 - `REPEAT_PHASE_2`: at least one widget, API, security, accessibility, or feedback gate fails.
 - `REDESIGN`: the public-token or embed architecture cannot meet the threat model.
+
+Current decision: **`CONDITIONAL_GO`**.
+
+Remaining blockers:
+
+- no public documentation-site pilot deployment;
+- Phase 1 independent human review incomplete;
+- credentialed Cloudflare/Claude hosted benchmark incomplete.
