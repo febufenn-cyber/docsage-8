@@ -10,23 +10,25 @@ question → grounded answer → failure classification → documentation gap �
 
 ## Current status
 
-- **Phase 0:** implemented for review in PR #1.
-- **Phase 1:** truth-engine implementation and pinned Hono engineering gate in PR #2.
-- **Phase 2:** not started; production readiness remains conditional on hosted-route benchmarking and independent human review.
+- **Phase 0:** merged into `main`.
+- **Phase 1:** truth engine and pinned Hono engineering gate merged into `main`.
+- **Phase 2:** single-project widget contract frozen; implementation in progress.
 
 Start here:
 
 - [Phase 0 index](docs/phase-0/README.md)
 - [Phase 1 index](docs/phase-1/README.md)
+- [Phase 2 index](docs/phase-2/README.md)
+- [Widget API contract](docs/phase-2/widget-api.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
-- [Pilot specification](docs/phase-0/pilot-specification.md)
 - [Threat model](docs/phase-0/threat-model.md)
 - [Model routing decision](docs/phase-1/model-routing.md)
 - [Phase 1 gate review](reviews/phase-1-truth-engine-review.md)
+- [Phase 2 gate review](reviews/phase-2-widget-review.md)
 
 ## Truth-engine capabilities
 
-The Phase 1 branch includes:
+The Phase 1 implementation includes:
 
 - immutable source-revision lineage;
 - safe public-source ingestion;
@@ -74,6 +76,21 @@ embeddable widget + learning console
 
 The hosted models require external credentials and are not confused with the keyless CI reference route.
 
+## Phase 2 product slice
+
+The first embeddable widget is intentionally narrow:
+
+- one public project and active corpus;
+- signed public widget tokens;
+- explicit origin allowlists;
+- bounded answer and feedback APIs;
+- rate limiting;
+- accessible Shadow DOM UI;
+- citations, useful refusals, and useful/not-useful feedback;
+- deterministic local demo and release gate.
+
+It does not introduce billing, private sources, multi-project administration, end-user accounts, autonomous actions, or production-readiness claims for the unexecuted hosted-model route.
+
 ## Product wedge
 
 The first customer profile is a small API, SDK, infrastructure, or developer-tool company with:
@@ -87,9 +104,9 @@ The first release is read-only and public-source-only. Private repositories, acc
 
 ## Phase roadmap
 
-1. **Phase 0 — Position and benchmark:** implemented for review.
-2. **Phase 1 — Truth engine:** implemented with a pinned engineering gate; external gates remain explicit.
-3. **Phase 2 — Single-project widget:** embeddable UI, feedback, domain controls, rate limits.
+1. **Phase 0 — Position and benchmark:** merged.
+2. **Phase 1 — Truth engine:** merged with a pinned engineering gate; external gates remain explicit.
+3. **Phase 2 — Single-project widget:** contract frozen; API, widget, feedback, and gate implementation underway.
 4. **Phase 3 — Learning console:** failure triage, unanswered clusters, source health.
 5. **Phase 4 — Reliable ingestion:** revisions, incremental refresh, deletions, retries, version awareness.
 6. **Phase 5 — Commercial foundation:** organizations, RLS, usage, billing, deletion, auditability.
