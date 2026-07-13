@@ -46,9 +46,27 @@ The widget emits privacy-bounded events:
 - `docsage:open`
 - `docsage:close`
 - `docsage:answer` with `traceId`, answer `state`, and citation count
+- `docsage:feedback` with `traceId`, rating, acceptance, and duplicate status
 - `docsage:error` with a public error code and retryable flag
 
-Answer text, questions, retrieved evidence, prompts, and token claims are not copied into event details.
+Answer text, questions, retrieved evidence, prompts, feedback comments, and token claims are not copied into event details.
+
+## Feedback
+
+Each answer with a trace ID offers Yes/No feedback controls.
+
+The browser sends:
+
+```json
+{
+  "eventId": "client-generated-uuid",
+  "traceId": "run_...",
+  "rating": "useful",
+  "reason": "clear_answer"
+}
+```
+
+The widget reuses the same `eventId` when retrying the same trace and rating. The API treats repeated event IDs idempotently. Free-text feedback is disabled by default.
 
 ## Browser request boundaries
 
@@ -56,7 +74,8 @@ The browser sends only:
 
 - the current question;
 - the current public page URL;
-- the signed public widget token.
+- the signed public widget token;
+- an optional controlled feedback event.
 
 Requests use `credentials: "omit"`, `cache: "no-store"`, and `referrerPolicy: "no-referrer"`. The widget does not inspect page text, forms, cookies, local storage, or browser history.
 
@@ -71,4 +90,22 @@ The default widget provides:
 - Escape to close;
 - focus restoration to the launcher;
 - a polite live region for messages and request status;
+- labelled feedback controls;
 - reduced-motion behavior when requested by the operating system.
+
+## Local demo
+
+Run:
+
+```bash
+npm install
+npm run demo:widget
+```
+
+The demo prints a local URL and serves the real widget, an origin-scoped public token, and the deterministic mini documentation corpus. It supports grounded answers, citations, useful refusals, and feedback without external model credentials.
+
+Run the complete engineering gate with:
+
+```bash
+npm run gate:widget
+```
