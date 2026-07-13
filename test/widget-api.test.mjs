@@ -66,8 +66,10 @@ test('issues and verifies scoped widget tokens', async () => {
 
 test('rejects tampered and expired widget tokens', async () => {
   const value = await token({ now: 0, expiresInSeconds: 60 });
-  const replacement = value.endsWith('a') ? 'b' : 'a';
-  await assert.rejects(() => verifyWidgetToken(`${value.slice(0, -1)}${replacement}`, { secret, now: 1_000 }), /signature/i);
+  const [header, payload, signature] = value.split('.');
+  const replacement = payload[0] === 'A' ? 'B' : 'A';
+  const tampered = `${header}.${replacement}${payload.slice(1)}.${signature}`;
+  await assert.rejects(() => verifyWidgetToken(tampered, { secret, now: 1_000 }), /signature/i);
   await assert.rejects(() => verifyWidgetToken(value, { secret, now: 61_000 }), (error) => error.code === 'TOKEN_EXPIRED');
 });
 
