@@ -19,6 +19,7 @@
     "eval:hono": "node scripts/run-hono-gate.mjs",
     "gate:hono": "npm run corpus:hono && npm run verify:hono && npm run eval:hono",
     "gate:widget": "node scripts/run-widget-gate.mjs",
-    "gate:learning": "node scripts/run-learning-gate.mjs"
+    "gate:learning": "node scripts/run-learning-gate.mjs",
+    "gate:ingestion": "node scripts/run-ingestion-gate.mjs"
   }
 }

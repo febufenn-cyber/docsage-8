@@ -14,7 +14,8 @@ question → grounded answer → failure classification → documentation gap �
 - **Phase 1:** truth engine and pinned Hono engineering gate merged; external validation remains incomplete.
 - **Phase 2:** single-project widget engineering gate passed; public pilot remains incomplete.
 - **Phase 3:** learning-console engineering implementation complete; real pilot learning events remain incomplete.
-- **Phases 4–6:** planned in the autonomous remaining-phases roadmap.
+- **Phase 4:** reliable-ingestion engineering implementation complete; deployed scheduler refresh evidence remains incomplete.
+- **Phases 5–6:** planned in the autonomous remaining-phases roadmap.
 
 Start here:
 
@@ -22,18 +23,21 @@ Start here:
 - [Phase 1 index](docs/phase-1/README.md)
 - [Phase 2 index](docs/phase-2/README.md)
 - [Phase 3 index](docs/phase-3/README.md)
+- [Phase 4 index](docs/phase-4/README.md)
 - [Remaining phases autonomous implementation plan](docs/roadmap/remaining-phases.md)
 - [Machine-readable remaining phases manifest](docs/roadmap/remaining-phases.manifest.json)
 - [Widget API contract](docs/phase-2/widget-api.md)
 - [Widget embed guide](docs/phase-2/embed.md)
 - [Learning event contract](docs/phase-3/event-contract.md)
 - [Learning operator console](docs/phase-3/operator-console.md)
+- [Reliable ingestion activation contract](docs/phase-4/activation-and-rollback.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
 - [Threat model](docs/phase-0/threat-model.md)
 - [Model routing decision](docs/phase-1/model-routing.md)
 - [Phase 1 gate review](reviews/phase-1-truth-engine-review.md)
 - [Phase 2 gate review](reviews/phase-2-widget-review.md)
 - [Phase 3 gate review](reviews/phase-3-learning-console-review.md)
+- [Phase 4 gate review](reviews/phase-4-reliable-ingestion-review.md)
 
 ## Truth-engine capabilities
 
@@ -107,7 +111,7 @@ npm run gate:widget
 
 ## Phase 3 learning console
 
-The learning loop now includes:
+The learning loop includes:
 
 - privacy redaction before persistence;
 - project-salted question fingerprints and bounded redacted excerpts;
@@ -129,9 +133,34 @@ npm run gate:learning
 
 Synthetic gate events prove engineering behavior. They are not represented as real pilot evidence.
 
+## Phase 4 reliable ingestion
+
+The reliable refresh layer includes:
+
+- project/source-scoped idempotent jobs;
+- validated transitions, optimistic versions, leases, retries, and append-only histories;
+- order-independent content-addressed manifests;
+- deterministic added, changed, unchanged, and deleted classifications;
+- unchanged document and chunk identity reuse;
+- staged deletion tombstones;
+- bounded scheduling and deterministic crash recovery;
+- privacy-safe source-health learning events;
+- atomic corpus activation and compatible rollback;
+- independent project/source/version/runtime active scopes;
+- transactional Supabase activation functions and append-only audits;
+- a machine-readable ingestion gate and CI artifact.
+
+Run:
+
+```bash
+npm run gate:ingestion
+```
+
+The deterministic gate does not claim that a deployed scheduler has completed a real customer source refresh.
+
 ## Autonomous remaining-phase workflow
 
-Three phases remain incomplete: Phase 4 through Phase 6. When the user says `build`, the repository plan selects the next incomplete phase and executes its sequential slices. Every slice must be committed, pushed, validated by CI, merged into `main`, and verified on `main` before the next slice begins.
+Two phases remain incomplete: Phase 5 and Phase 6. When the user says `build`, the repository plan selects the next incomplete phase and executes its sequential slices. Every slice must be committed, pushed, validated by CI, merged into `main`, and verified on `main` before the next slice begins.
 
 The plan is checked by:
 
@@ -158,8 +187,8 @@ The first release remains read-only and public-source-only. Private repositories
 2. **Phase 1 — Truth engine:** engineering gate passed; external gates remain explicit.
 3. **Phase 2 — Single-project widget:** engineering gate passed; public pilot pending.
 4. **Phase 3 — Learning console:** engineering gate implemented; real pilot events pending.
-5. **Phase 4 — Reliable ingestion:** next; revisions, incremental refresh, deletions, retries, and version awareness.
-6. **Phase 5 — Commercial foundation:** planned; organizations, RLS, usage, billing, deletion, and auditability.
+5. **Phase 4 — Reliable ingestion:** engineering gate implemented; deployed source refresh pending.
+6. **Phase 5 — Commercial foundation:** next; organizations, RLS, usage, billing, deletion, and auditability.
 7. **Phase 6 — Documentation intelligence:** planned; evidence-backed doc drafts and human-approved GitHub pull requests.
 
 ## Business hypothesis
