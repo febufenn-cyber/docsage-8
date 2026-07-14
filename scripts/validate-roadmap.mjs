@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFile } from 'node:fs/promises';
+import { access, readFile } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -47,9 +47,11 @@ for (const item of readiness) {
 }
 
 const phases = manifest.phases ?? [];
-if (phases.length !== 4) fail('exactly four remaining phases are required');
+if (phases.length !== 4) fail('exactly four tracked phases are required');
 const expectedNumbers = [3, 4, 5, 6];
+const allowedStatuses = new Set(['incomplete', 'engineering_complete', 'pilot_validated']);
 const ids = new Set();
+let incompleteSeen = false;
 
 for (let index = 0; index < phases.length; index += 1) {
   const phase = phases[index];
@@ -57,7 +59,15 @@ for (let index = 0; index < phases.length; index += 1) {
   if (phase.number !== expected) fail(`phase order must be 3, 4, 5, 6; found ${phase.number} at index ${index}`);
   if (!phase.id || ids.has(phase.id)) fail(`phase ${phase.number} has a missing or duplicate id`);
   ids.add(phase.id);
-  if (phase.status !== 'incomplete') fail(`phase ${phase.number} must start as incomplete`);
+  if (!allowedStatuses.has(phase.status)) fail(`phase ${phase.number} has unsupported status ${phase.status}`);
+  if (phase.status === 'incomplete') incompleteSeen = true;
+  if (incompleteSeen && phase.status !== 'incomplete') fail(`phase ${phase.number} cannot be complete while an earlier phase is incomplete`);
+  if (phase.status !== 'incomplete') {
+    if (!phase.completedAt) fail(`phase ${phase.number} completion requires completedAt`);
+    if (!regressionCommands.includes(phase.gateCommand)) fail(`completed phase ${phase.number} gate must be a required regression command`);
+    await access(path.join(root, phase.lockDocument)).catch(() => fail(`completed phase ${phase.number} lock document is missing`));
+    await access(path.join(root, phase.reviewDocument)).catch(() => fail(`completed phase ${phase.number} review document is missing`));
+  }
   const expectedPrerequisite = phase.number - 1;
   if (phase.prerequisites?.length !== 1 || phase.prerequisites[0] !== expectedPrerequisite) {
     fail(`phase ${phase.number} must depend on phase ${expectedPrerequisite}`);
@@ -82,7 +92,6 @@ for (let index = 0; index < phases.length; index += 1) {
   for (const slice of phase.slices) {
     const readable = slice.split('-').map((word) => word[0]?.toUpperCase() + word.slice(1)).join(' ');
     if (!planLower.includes(slice.replaceAll('-', ' ')) && !plan.includes(readable)) {
-      // Slice headings may be more readable than manifest IDs, but each key concept must be represented.
       const concepts = slice.split('-').filter((word) => word.length > 3);
       if (!concepts.every((concept) => planLower.includes(concept))) {
         fail(`plan does not cover phase ${phase.number} slice: ${slice}`);
@@ -122,10 +131,13 @@ for (const phrase of [
   if (!planLower.includes(phrase.toLowerCase())) fail(`plan is missing required policy phrase: ${phrase}`);
 }
 
+const incompletePhases = phases.filter((phase) => phase.status === 'incomplete');
 console.log(JSON.stringify({
   valid: true,
   roadmapId: manifest.roadmapId,
-  remainingPhaseCount: phases.length,
-  phases: phases.map(({ number, id, name, gateCommand }) => ({ number, id, name, gateCommand })),
+  trackedPhaseCount: phases.length,
+  remainingPhaseCount: incompletePhases.length,
+  nextIncompletePhase: incompletePhases[0]?.number ?? null,
+  phases: phases.map(({ number, id, name, status, gateCommand }) => ({ number, id, name, status, gateCommand })),
   externalReadinessItems: readiness.map(({ id, currentStatus }) => ({ id, currentStatus }))
 }, null, 2));
