@@ -14,3 +14,4 @@ export {
   canonicalLearningSnapshot,
   LearningProjectionStore
 } from './aggregate.mjs';
+export { createLearningConsoleApp } from './api.mjs';
