@@ -13,12 +13,15 @@ question → grounded answer → failure classification → documentation gap �
 - **Phase 0:** merged into `main`.
 - **Phase 1:** truth engine and pinned Hono engineering gate merged into `main`.
 - **Phase 2:** single-project widget engineering gate passed; public pilot remains incomplete.
+- **Phases 3–6:** implementation plan and autonomous build protocol defined in the remaining-phases roadmap.
 
 Start here:
 
 - [Phase 0 index](docs/phase-0/README.md)
 - [Phase 1 index](docs/phase-1/README.md)
 - [Phase 2 index](docs/phase-2/README.md)
+- [Remaining phases autonomous implementation plan](docs/roadmap/remaining-phases.md)
+- [Machine-readable remaining phases manifest](docs/roadmap/remaining-phases.manifest.json)
 - [Widget API contract](docs/phase-2/widget-api.md)
 - [Widget embed guide](docs/phase-2/embed.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
@@ -116,6 +119,18 @@ npm run gate:widget
 
 Phase 2 does not introduce billing, private sources, multi-project administration, end-user accounts, autonomous actions, or production-readiness claims for the unexecuted hosted-model route.
 
+## Autonomous remaining-phase workflow
+
+Four numbered phases remain: Phase 3 through Phase 6. When the user says `build`, the repository plan instructs the implementation agent to build the next incomplete phase in sequential slices. Every slice must be committed, pushed, validated by CI, merged into `main`, and verified on `main` before the next slice begins.
+
+The plan is checked by:
+
+```bash
+npm run validate:roadmap
+```
+
+It does not permit lowering gates, inventing external evidence, committing secrets, or merging failing code.
+
 ## Product wedge
 
 The first customer profile is a small API, SDK, infrastructure, or developer-tool company with:
@@ -132,10 +147,10 @@ The first release is read-only and public-source-only. Private repositories, acc
 1. **Phase 0 — Position and benchmark:** merged.
 2. **Phase 1 — Truth engine:** merged with a pinned engineering gate; external gates remain explicit.
 3. **Phase 2 — Single-project widget:** engineering gate passed; public pilot pending.
-4. **Phase 3 — Learning console:** failure triage, unanswered clusters, source health.
-5. **Phase 4 — Reliable ingestion:** revisions, incremental refresh, deletions, retries, version awareness.
-6. **Phase 5 — Commercial foundation:** organizations, RLS, usage, billing, deletion, auditability.
-7. **Phase 6 — Documentation intelligence:** evidence-backed doc drafts and human-approved GitHub pull requests.
+4. **Phase 3 — Learning console:** planned; failure triage, unanswered clusters, source health.
+5. **Phase 4 — Reliable ingestion:** planned; revisions, incremental refresh, deletions, retries, version awareness.
+6. **Phase 5 — Commercial foundation:** planned; organizations, RLS, usage, billing, deletion, auditability.
+7. **Phase 6 — Documentation intelligence:** planned; evidence-backed doc drafts and human-approved GitHub pull requests.
 
 ## Business hypothesis
 
