@@ -141,6 +141,16 @@ export async function normalizeLearningEvent(input, options = {}) {
   });
 }
 
+function canonicalize(value) {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === 'object') {
+    const output = {};
+    for (const key of Object.keys(value).sort()) output[key] = canonicalize(value[key]);
+    return output;
+  }
+  return value;
+}
+
 export function canonicalLearningEvent(event) {
-  return JSON.stringify(event, Object.keys(event).sort());
+  return JSON.stringify(canonicalize(event));
 }
