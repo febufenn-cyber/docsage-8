@@ -12,18 +12,28 @@ export class MemoryLearningEventStore {
   #projects = new Map();
 
   async ingest(input, options = {}) {
-    const event = await normalizeLearningEvent(input, options);
+    const projectId = typeof input?.projectId === 'string' ? input.projectId.trim() : '';
+    const eventId = typeof input?.eventId === 'string' ? input.eventId.trim() : '';
+    const existing = this.#projects.get(projectId)?.get(eventId) ?? null;
+    const normalizedInput = existing && !input.occurredAt
+      ? { ...input, occurredAt: existing.occurredAt }
+      : input;
+    const event = await normalizeLearningEvent(normalizedInput, {
+      ...options,
+      receivedAt: existing?.receivedAt ?? options.receivedAt
+    });
+
     let events = this.#projects.get(event.projectId);
     if (!events) {
       events = new Map();
       this.#projects.set(event.projectId, events);
     }
-    const existing = events.get(event.eventId);
-    if (existing) {
-      if (canonicalLearningEvent(existing) !== canonicalLearningEvent(event)) {
+    const current = events.get(event.eventId);
+    if (current) {
+      if (canonicalLearningEvent(current) !== canonicalLearningEvent(event)) {
         throw new LearningEventConflictError();
       }
-      return { accepted: false, duplicate: true, event: existing };
+      return { accepted: false, duplicate: true, event: current };
     }
     events.set(event.eventId, event);
     return { accepted: true, duplicate: false, event };
