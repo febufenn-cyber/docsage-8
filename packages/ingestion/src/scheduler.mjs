@@ -17,6 +17,15 @@ function timestamp(value, name) {
   return date.toISOString();
 }
 
+function clockValue(value) {
+  return typeof value === 'function' ? value() : (value ?? Date.now());
+}
+
+function scheduleIdentity(schedule) {
+  const { createdAt, updatedAt, nextRunAt, ...identity } = schedule;
+  return stableJson(identity);
+}
+
 export function deterministicBackoff(input = {}) {
   const attempt = input.attempt;
   if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > 20) throw new RangeError('attempt must be between 1 and 20');
@@ -40,7 +49,9 @@ export function normalizeIngestionSchedule(input, options = {}) {
   if (!Number.isSafeInteger(intervalMs) || intervalMs < 60_000 || intervalMs > 31 * 24 * 60 * 60 * 1_000) {
     throw new RangeError('intervalMs must be between one minute and 31 days');
   }
-  const now = timestamp(options.now?.() ?? Date.now(), 'now');
+  const maxAttempts = input.maxAttempts ?? 3;
+  if (!Number.isSafeInteger(maxAttempts) || maxAttempts < 1 || maxAttempts > 20) throw new RangeError('maxAttempts must be between 1 and 20');
+  const now = timestamp(clockValue(options.now), 'now');
   const id = input.id ?? stableId('schedule', projectId, sourceId, input.name ?? intervalMs);
   return Object.freeze({
     id,
@@ -52,7 +63,7 @@ export function normalizeIngestionSchedule(input, options = {}) {
     nextRunAt: timestamp(input.nextRunAt ?? now, 'nextRunAt'),
     requestedVersion: boundedString(input.requestedVersion ?? 'current', 'requestedVersion', 100),
     requestedRuntime: boundedString(input.requestedRuntime ?? 'all', 'requestedRuntime', 100),
-    maxAttempts: Number.isSafeInteger(input.maxAttempts) ? input.maxAttempts : 3,
+    maxAttempts,
     configuration: Object.freeze(input.configuration && typeof input.configuration === 'object' && !Array.isArray(input.configuration) ? { ...input.configuration } : {}),
     configurationHash: sha256(stableJson(input.configuration ?? {})),
     createdAt: now,
@@ -66,7 +77,7 @@ export class MemoryIngestionScheduler {
   add(input, options = {}) {
     const schedule = normalizeIngestionSchedule(input, options);
     const existing = this.#schedules.get(schedule.id);
-    if (existing && stableJson({ ...existing, nextRunAt: null, updatedAt: null }) !== stableJson({ ...schedule, nextRunAt: null, updatedAt: null })) {
+    if (existing && scheduleIdentity(existing) !== scheduleIdentity(schedule)) {
       throw Object.assign(new Error('Schedule identity conflict'), { code: 'INGEST_SCHEDULE_CONFLICT' });
     }
     if (existing) return { created: false, schedule: existing };
@@ -80,7 +91,7 @@ export class MemoryIngestionScheduler {
   }
 
   due(projectId, now = Date.now(), limit = 100) {
-    const nowIso = timestamp(now, 'now');
+    const nowIso = timestamp(clockValue(now), 'now');
     return [...this.#schedules.values()]
       .filter((schedule) => schedule.projectId === projectId && schedule.enabled && schedule.nextRunAt <= nowIso)
       .sort((a, b) => a.nextRunAt.localeCompare(b.nextRunAt) || a.id.localeCompare(b.id))
@@ -89,7 +100,7 @@ export class MemoryIngestionScheduler {
 
   enqueueDue(projectId, jobStore, options = {}) {
     if (!jobStore?.create) throw new TypeError('jobStore is required');
-    const nowIso = timestamp(options.now?.() ?? Date.now(), 'now');
+    const nowIso = timestamp(clockValue(options.now), 'now');
     const results = [];
     for (const schedule of this.due(projectId, nowIso, options.limit ?? 100)) {
       const occurrenceAt = schedule.nextRunAt;
@@ -117,7 +128,7 @@ export class MemoryIngestionScheduler {
 
 export function recoverExpiredIngestionJobs(jobStore, projectId, options = {}) {
   if (!jobStore?.list || !jobStore?.transition) throw new TypeError('jobStore is required');
-  const nowIso = timestamp(options.now?.() ?? Date.now(), 'now');
+  const nowIso = timestamp(clockValue(options.now), 'now');
   const recovered = [];
   for (const job of jobStore.list(projectId, { states: RUNNING_STATES })) {
     if (!job.leaseOwner || !job.leaseExpiresAt || job.leaseExpiresAt > nowIso) continue;
