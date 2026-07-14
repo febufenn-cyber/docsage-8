@@ -10,7 +10,8 @@
     "npm run check",
     "npm run gate:hono",
     "npm run gate:widget",
-    "npm run gate:learning"
+    "npm run gate:learning",
+    "npm run gate:ingestion"
   ],
   "externalReadinessTrack": [
     {
@@ -63,7 +64,8 @@
       "number": 4,
       "id": "reliable-ingestion",
       "name": "Reliable Ingestion",
-      "status": "incomplete",
+      "status": "engineering_complete",
+      "completedAt": "2026-07-14",
       "prerequisites": [3],
       "lockDocument": "docs/phase-4/implementation-plan.md",
       "reviewDocument": "reviews/phase-4-reliable-ingestion-review.md",
