@@ -43,6 +43,27 @@ jobs:
             .tmp/widget-gate/gate.json
             .tmp/widget-gate/report.md
 
+  learning-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm install --ignore-scripts
+      - name: Run Phase 3 learning gate
+        run: npm run gate:learning
+      - name: Upload learning gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-3-learning-gate
+          if-no-files-found: error
+          path: |
+            .tmp/learning-gate/gate.json
+            .tmp/learning-gate/report.md
+
   hono-gate:
     runs-on: ubuntu-latest
     steps:
