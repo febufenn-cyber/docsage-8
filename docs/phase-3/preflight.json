@@ -1,0 +1,18 @@
+{
+  "phase": 3,
+  "phaseId": "learning-console",
+  "verifiedBase": "bd2e6e5ce952b0c088d9d37cdf5192e7d359ceac",
+  "openEarlierPullRequests": 0,
+  "priorGates": {
+    "roadmapAndTests": "green",
+    "honoGate": "green",
+    "widgetGate": "green"
+  },
+  "externalReadiness": {
+    "independentHumanReview": "0/15",
+    "hostedModelBenchmark": "incomplete",
+    "publicWidgetPilot": "incomplete"
+  },
+  "selectedPhase": 3,
+  "decision": "PROCEED_ENGINEERING_WITH_EXTERNAL_BLOCKERS"
+}
