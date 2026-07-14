@@ -14,6 +14,7 @@ const [manifestText, plan] = await Promise.all([
   readFile(manifestPath, 'utf8'),
   readFile(planPath, 'utf8')
 ]);
+const planLower = plan.toLowerCase();
 
 let manifest;
 try {
@@ -31,6 +32,10 @@ const regressionCommands = manifest.requiredRegressionCommands ?? [];
 for (const command of ['npm run check', 'npm run gate:hono', 'npm run gate:widget']) {
   if (!regressionCommands.includes(command)) fail(`missing regression command: ${command}`);
   if (!plan.includes(command)) fail(`plan does not document regression command: ${command}`);
+}
+
+if (!plan.includes('docs/phase-N/implementation-plan.md')) {
+  fail('plan must define the generic phase-lock document path');
 }
 
 const readiness = manifest.externalReadinessTrack ?? [];
@@ -57,7 +62,9 @@ for (let index = 0; index < phases.length; index += 1) {
   if (phase.prerequisites?.length !== 1 || phase.prerequisites[0] !== expectedPrerequisite) {
     fail(`phase ${phase.number} must depend on phase ${expectedPrerequisite}`);
   }
-  if (!phase.lockDocument?.includes(`phase-${phase.number}`)) fail(`phase ${phase.number} lockDocument is inconsistent`);
+  if (phase.lockDocument !== `docs/phase-${phase.number}/implementation-plan.md`) {
+    fail(`phase ${phase.number} lockDocument is inconsistent`);
+  }
   if (!phase.reviewDocument?.includes(`phase-${phase.number}`)) fail(`phase ${phase.number} reviewDocument is inconsistent`);
   if (!phase.gateCommand?.startsWith('npm run gate:')) fail(`phase ${phase.number} gateCommand is invalid`);
   if (!Array.isArray(phase.slices) || phase.slices.length !== 4 || phase.slices.some((slice) => !slice)) {
@@ -69,15 +76,15 @@ for (let index = 0; index < phases.length; index += 1) {
   if (!phase.externalGoEvidence) fail(`phase ${phase.number} requires an externalGoEvidence statement`);
 
   const heading = `Phase ${phase.number} — ${phase.name}`;
-  for (const requiredText of [heading, phase.gateCommand, phase.lockDocument, phase.reviewDocument]) {
+  for (const requiredText of [heading, phase.gateCommand, phase.reviewDocument]) {
     if (!plan.includes(requiredText)) fail(`plan is missing phase ${phase.number} reference: ${requiredText}`);
   }
   for (const slice of phase.slices) {
     const readable = slice.split('-').map((word) => word[0]?.toUpperCase() + word.slice(1)).join(' ');
-    if (!plan.toLowerCase().includes(slice.replaceAll('-', ' ')) && !plan.includes(readable)) {
-      // Slice headings are allowed to be more readable than their manifest IDs, but each key concept must appear.
+    if (!planLower.includes(slice.replaceAll('-', ' ')) && !plan.includes(readable)) {
+      // Slice headings may be more readable than manifest IDs, but each key concept must be represented.
       const concepts = slice.split('-').filter((word) => word.length > 3);
-      if (!concepts.every((concept) => plan.toLowerCase().includes(concept))) {
+      if (!concepts.every((concept) => planLower.includes(concept))) {
         fail(`plan does not cover phase ${phase.number} slice: ${slice}`);
       }
     }
@@ -106,13 +113,13 @@ for (const field of requiredReportFields) {
 }
 
 for (const phrase of [
-  'Four numbered product phases remain',
-  'When the user says **`build`**',
+  'four numbered product phases remain',
+  'when the user says **`build`**',
   'commit, push, open a pull request',
   'verify the new `main` head',
-  'No autonomous repository mutation or merge'
+  'no autonomous repository mutation or merge'
 ]) {
-  if (!plan.includes(phrase)) fail(`plan is missing required policy phrase: ${phrase}`);
+  if (!planLower.includes(phrase.toLowerCase())) fail(`plan is missing required policy phrase: ${phrase}`);
 }
 
 console.log(JSON.stringify({
