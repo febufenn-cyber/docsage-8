@@ -9,7 +9,8 @@
   "requiredRegressionCommands": [
     "npm run check",
     "npm run gate:hono",
-    "npm run gate:widget"
+    "npm run gate:widget",
+    "npm run gate:learning"
   ],
   "externalReadinessTrack": [
     {
@@ -36,10 +37,11 @@
       "number": 3,
       "id": "learning-console",
       "name": "Learning Console",
-      "status": "incomplete",
-      "prerequisites": [2],
+      "status": "engineering_complete",
+      "completedAt": "2026-07-14",
       "lockDocument": "docs/phase-3/implementation-plan.md",
       "reviewDocument": "reviews/phase-3-learning-console-review.md",
+      "prerequisites": [2],
       "gateCommand": "npm run gate:learning",
       "slices": [
         "contract-privacy-event-schema",

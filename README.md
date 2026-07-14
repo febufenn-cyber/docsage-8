@@ -10,25 +10,30 @@ question → grounded answer → failure classification → documentation gap �
 
 ## Current status
 
-- **Phase 0:** merged into `main`.
-- **Phase 1:** truth engine and pinned Hono engineering gate merged into `main`.
+- **Phase 0:** position and benchmark merged into `main`.
+- **Phase 1:** truth engine and pinned Hono engineering gate merged; external validation remains incomplete.
 - **Phase 2:** single-project widget engineering gate passed; public pilot remains incomplete.
-- **Phases 3–6:** implementation plan and autonomous build protocol defined in the remaining-phases roadmap.
+- **Phase 3:** learning-console engineering implementation complete; real pilot learning events remain incomplete.
+- **Phases 4–6:** planned in the autonomous remaining-phases roadmap.
 
 Start here:
 
 - [Phase 0 index](docs/phase-0/README.md)
 - [Phase 1 index](docs/phase-1/README.md)
 - [Phase 2 index](docs/phase-2/README.md)
+- [Phase 3 index](docs/phase-3/README.md)
 - [Remaining phases autonomous implementation plan](docs/roadmap/remaining-phases.md)
 - [Machine-readable remaining phases manifest](docs/roadmap/remaining-phases.manifest.json)
 - [Widget API contract](docs/phase-2/widget-api.md)
 - [Widget embed guide](docs/phase-2/embed.md)
+- [Learning event contract](docs/phase-3/event-contract.md)
+- [Learning operator console](docs/phase-3/operator-console.md)
 - [Answer constitution](docs/phase-0/answer-constitution.md)
 - [Threat model](docs/phase-0/threat-model.md)
 - [Model routing decision](docs/phase-1/model-routing.md)
 - [Phase 1 gate review](reviews/phase-1-truth-engine-review.md)
 - [Phase 2 gate review](reviews/phase-2-widget-review.md)
+- [Phase 3 gate review](reviews/phase-3-learning-console-review.md)
 
 ## Truth-engine capabilities
 
@@ -80,35 +85,18 @@ embeddable widget + learning console
 
 The hosted models require external credentials and are not confused with the keyless CI reference route.
 
-## Phase 2 product slice
+## Phase 2 widget
 
-The embeddable widget now includes:
+The embeddable widget includes:
 
-- one public project and active corpus;
-- signed public widget tokens;
-- explicit exact and wildcard origin allowlists;
+- signed public project tokens and exact/wildcard origin allowlists;
 - bounded config, answer, and feedback APIs;
 - separate answer and feedback rate limiting;
-- accessible Shadow DOM UI;
-- citations and useful refusal states;
-- controlled useful/not-useful feedback;
-- idempotent feedback events;
+- accessible Shadow DOM UI with citations and useful refusal states;
+- controlled idempotent useful/not-useful feedback;
 - light, dark, and automatic themes;
 - a dependency-free local demo;
 - a machine-readable widget gate and CI artifact.
-
-Reference Phase 2 gate result:
-
-```text
-Decision: CONDITIONAL_GO
-Engineering checks: all passed
-Widget gzip size: 5,136 bytes
-Forbidden source patterns: 0
-Answer state: supported
-Safe citations: 8
-Refusal state: account_specific
-Feedback entries after duplicate submission: 1
-```
 
 Run:
 
@@ -117,11 +105,33 @@ npm run demo:widget
 npm run gate:widget
 ```
 
-Phase 2 does not introduce billing, private sources, multi-project administration, end-user accounts, autonomous actions, or production-readiness claims for the unexecuted hosted-model route.
+## Phase 3 learning console
+
+The learning loop now includes:
+
+- privacy redaction before persistence;
+- project-salted question fingerprints and bounded redacted excerpts;
+- append-only project-RLS learning events;
+- idempotent replay and conflict detection;
+- deterministic outcome classification;
+- order-independent daily metrics, clusters, feedback, and source health;
+- exact aggregate reconciliation and rebuild support;
+- authorization-before-read operator APIs;
+- a dependency-free accessible Shadow DOM console;
+- safe text-only rendering of untrusted excerpts;
+- a machine-readable learning gate and CI artifact.
+
+Run:
+
+```bash
+npm run gate:learning
+```
+
+Synthetic gate events prove engineering behavior. They are not represented as real pilot evidence.
 
 ## Autonomous remaining-phase workflow
 
-Four numbered phases remain: Phase 3 through Phase 6. When the user says `build`, the repository plan instructs the implementation agent to build the next incomplete phase in sequential slices. Every slice must be committed, pushed, validated by CI, merged into `main`, and verified on `main` before the next slice begins.
+Three phases remain incomplete: Phase 4 through Phase 6. When the user says `build`, the repository plan selects the next incomplete phase and executes its sequential slices. Every slice must be committed, pushed, validated by CI, merged into `main`, and verified on `main` before the next slice begins.
 
 The plan is checked by:
 
@@ -140,16 +150,16 @@ The first customer profile is a small API, SDK, infrastructure, or developer-too
 - recurring setup, integration, and troubleshooting questions;
 - a founder, developer advocate, documentation owner, or support lead who can run a pilot.
 
-The first release is read-only and public-source-only. Private repositories, account-specific support, autonomous writes, enterprise SSO, and broad integrations are deliberately excluded.
+The first release remains read-only and public-source-only. Private repositories, account-specific support, autonomous writes, enterprise SSO, and broad integrations are deliberately excluded.
 
 ## Phase roadmap
 
 1. **Phase 0 — Position and benchmark:** merged.
-2. **Phase 1 — Truth engine:** merged with a pinned engineering gate; external gates remain explicit.
+2. **Phase 1 — Truth engine:** engineering gate passed; external gates remain explicit.
 3. **Phase 2 — Single-project widget:** engineering gate passed; public pilot pending.
-4. **Phase 3 — Learning console:** planned; failure triage, unanswered clusters, source health.
-5. **Phase 4 — Reliable ingestion:** planned; revisions, incremental refresh, deletions, retries, version awareness.
-6. **Phase 5 — Commercial foundation:** planned; organizations, RLS, usage, billing, deletion, auditability.
+4. **Phase 3 — Learning console:** engineering gate implemented; real pilot events pending.
+5. **Phase 4 — Reliable ingestion:** next; revisions, incremental refresh, deletions, retries, and version awareness.
+6. **Phase 5 — Commercial foundation:** planned; organizations, RLS, usage, billing, deletion, and auditability.
 7. **Phase 6 — Documentation intelligence:** planned; evidence-backed doc drafts and human-approved GitHub pull requests.
 
 ## Business hypothesis
