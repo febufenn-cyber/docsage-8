@@ -19,8 +19,25 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm install --ignore-scripts
-      - run: npm run check
+      - name: Run full validation
+        shell: bash
+        run: |
+          mkdir -p .tmp
+          set +e
+          npm run check 2>&1 | tee .tmp/test.log
+          status=${PIPESTATUS[0]}
+          echo "$status" > .tmp/test.exit
+          exit "$status"
       - run: npm run demo
+      - name: Upload test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-diagnostics
+          if-no-files-found: warn
+          path: |
+            .tmp/test.log
+            .tmp/test.exit
 
   widget-gate:
     runs-on: ubuntu-latest
