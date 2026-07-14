@@ -1,0 +1,14 @@
+{
+  "phase": 3,
+  "eventSchemaVersion": 1,
+  "eventTypes": [
+    "answer.completed",
+    "answer.refused",
+    "feedback.recorded",
+    "source.health",
+    "evaluation.failed"
+  ],
+  "questionStorage": "project-salted-fingerprint-and-redacted-excerpt",
+  "idempotencyKey": ["projectId", "eventId"],
+  "appendOnly": true
+}
