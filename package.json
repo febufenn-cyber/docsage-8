@@ -6,8 +6,9 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "test": "node --test",
-    "check": "npm run validate:evals && npm test",
+    "check": "npm run validate:evals && npm run validate:roadmap && npm test",
     "validate:evals": "node scripts/validate-evals.mjs",
+    "validate:roadmap": "node scripts/validate-roadmap.mjs",
     "demo": "node apps/cli/src/main.mjs demo",
     "demo:widget": "node apps/widget/demo/server.mjs",
     "ask": "node apps/cli/src/main.mjs ask",
