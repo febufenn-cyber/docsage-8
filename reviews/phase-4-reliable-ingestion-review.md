@@ -1,6 +1,6 @@
 # Phase 4 Reliable Ingestion Review
 
-Status: **CONDITIONAL GO — ENGINEERING GATE IMPLEMENTED**
+Status: **CONDITIONAL GO — ENGINEERING GATE PASSED**
 
 ## Decision
 
@@ -10,7 +10,51 @@ Status: **CONDITIONAL GO — ENGINEERING GATE IMPLEMENTED**
 - [ ] REDESIGN
 - [ ] KILL
 
-The Phase 4 deterministic engineering implementation is complete on this branch. The definitive scorecard is produced by `npm run gate:ingestion` and uploaded by GitHub Actions as `phase-4-ingestion-gate` before merge.
+The Phase 4 deterministic engineering implementation is complete. GitHub Actions run 52 passed the full tests, Phase 2 widget gate, Phase 3 learning gate, Phase 4 reliable ingestion gate, and pinned Phase 1 Hono gate.
+
+## Gate artifact
+
+- Artifact: `phase-4-ingestion-gate`
+- Artifact ID: `8302426170`
+- Digest:
+
+```text
+sha256:8a290112236951411970494b036ab077151ae9b7f86e11253abf98ab60d9cbb8
+```
+
+- Evaluated branch head: `10462efd7d3639bed15f07d5d5a4ecc94e6336a2`
+- Gate creation time: `2026-07-14T06:39:59.851Z`
+
+## Measured scorecard
+
+| Check | Result |
+|---|---:|
+| Exact job replay | one stored job |
+| Conflicting job replay | blocked |
+| Expired worker lease | recovered to deterministic retry |
+| Source-health event privacy | pass |
+| Concurrent scheduler delivery | one stored job |
+| Unchanged complete refresh | existing corpus revision reused |
+| Staged deletion before activation | prior corpus remained active |
+| Simulated failed activation | prior chunks remained exact |
+| Successful activation | exact version/runtime scope switched |
+| Rollback | exact prior corpus restored |
+| Mixed-version contamination | zero |
+| Machine-readable checks | **11/11 passed** |
+
+## Measured metrics
+
+| Metric | Result |
+|---|---:|
+| Manual job count | 1 |
+| Manual job history records | 4 |
+| Scheduled job count after concurrent delivery | 1 |
+| Initial corpus items | 2 |
+| Staged corpus items | 2 |
+| Staged deletion tombstones | 1 |
+| Activation audit events including seeds | 4 |
+| Active v4 chunks after rollback | 2 |
+| Independently active v5 chunks | 1 |
 
 ## Implemented evidence
 
@@ -28,22 +72,6 @@ The Phase 4 deterministic engineering implementation is complete on this branch.
 - append-only activation audit records;
 - additive ingestion, learning, widget, Hono, and full-test CI gates.
 
-## Release targets
-
-| Metric | Target |
-|---|---:|
-| Exact job replay | one stored job |
-| Conflicting replay | blocked |
-| Expired lease recovery | deterministic |
-| Concurrent schedule delivery | one job |
-| Unchanged complete refresh | zero new corpus revision |
-| Deletion before activation | prior corpus remains active |
-| Failed activation | prior corpus remains exact |
-| Successful activation | exactly one active revision per scope |
-| Rollback | exact prior chunks restored |
-| Mixed-version active chunks | 0 |
-| Prior Phase 1–3 gates | green |
-
 ## External blockers
 
 - no deployed scheduler has completed a real source refresh;
@@ -51,4 +79,4 @@ The Phase 4 deterministic engineering implementation is complete on this branch.
 - credentialed hosted-model benchmark remains incomplete;
 - public widget pilot remains incomplete.
 
-These blockers prevent a deployed-refresh-validated `GO_TO_PHASE_5` claim. They do not invalidate the deterministic engineering result.
+These blockers prevent a deployed-refresh-validated `GO_TO_PHASE_5` claim. They do not invalidate the deterministic engineering result. The next autonomous `build` command therefore selects Phase 5 engineering while preserving these blockers.
