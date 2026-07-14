@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "roadmapId": "docsage-remaining-phases",
+  "trigger": {
+    "default": "build",
+    "specific": "build phase N",
+    "behavior": "Build the lowest-numbered incomplete phase, or the selected phase after satisfying earlier prerequisites. Execute all slices sequentially, merge each green PR into main, and verify main before continuing."
+  },
+  "requiredRegressionCommands": [
+    "npm run check",
+    "npm run gate:hono",
+    "npm run gate:widget"
+  ],
+  "externalReadinessTrack": [
+    {
+      "id": "phase1-independent-review",
+      "requiredEvidence": "15 independently reviewed benchmark cases",
+      "currentStatus": "incomplete",
+      "mayBeSelfCertified": false
+    },
+    {
+      "id": "hosted-model-benchmark",
+      "requiredEvidence": "Credentialed Cloudflare embedding/reranking and Claude benchmark",
+      "currentStatus": "incomplete",
+      "mayBeSelfCertified": false
+    },
+    {
+      "id": "public-widget-pilot",
+      "requiredEvidence": "At least one real public documentation-site deployment",
+      "currentStatus": "incomplete",
+      "mayBeSelfCertified": false
+    }
+  ],
+  "phases": [
+    {
+      "number": 3,
+      "id": "learning-console",
+      "name": "Learning Console",
+      "status": "incomplete",
+      "prerequisites": [2],
+      "lockDocument": "docs/phase-3/implementation-plan.md",
+      "reviewDocument": "reviews/phase-3-learning-console-review.md",
+      "gateCommand": "npm run gate:learning",
+      "slices": [
+        "contract-privacy-event-schema",
+        "classification-aggregation-pipeline",
+        "operator-api-console-ui",
+        "learning-gate-review"
+      ],
+      "requiredOutcomes": [
+        "idempotent event ingestion",
+        "cross-project isolation",
+        "privacy redaction",
+        "exact aggregate reconciliation",
+        "accessible safe console",
+        "earlier gates remain green"
+      ],
+      "externalGoEvidence": "At least one real pilot produces learning events"
+    },
+    {
+      "number": 4,
+      "id": "reliable-ingestion",
+      "name": "Reliable Ingestion",
+      "status": "incomplete",
+      "prerequisites": [3],
+      "lockDocument": "docs/phase-4/implementation-plan.md",
+      "reviewDocument": "reviews/phase-4-reliable-ingestion-review.md",
+      "gateCommand": "npm run gate:ingestion",
+      "slices": [
+        "job-revision-state-machine",
+        "incremental-discovery-content-diffs",
+        "scheduling-retries-source-health",
+        "version-activation-ingestion-gate"
+      ],
+      "requiredOutcomes": [
+        "unchanged corpus creates no duplicates",
+        "deletions propagate safely",
+        "failed jobs cannot partially activate",
+        "rollback restores a prior corpus",
+        "retry and crash recovery pass",
+        "mixed-version contamination is zero",
+        "earlier gates remain green"
+      ],
+      "externalGoEvidence": "A real source refresh completes through the deployed scheduler"
+    },
+    {
+      "number": 5,
+      "id": "commercial-foundation",
+      "name": "Commercial Foundation",
+      "status": "incomplete",
+      "prerequisites": [4],
+      "lockDocument": "docs/phase-5/implementation-plan.md",
+      "reviewDocument": "reviews/phase-5-commercial-foundation-review.md",
+      "gateCommand": "npm run gate:commercial",
+      "slices": [
+        "organizations-memberships-authorization",
+        "usage-metering-quotas",
+        "plans-billing-provider-boundary",
+        "data-lifecycle-auditability"
+      ],
+      "requiredOutcomes": [
+        "complete cross-tenant isolation",
+        "deterministic role transitions",
+        "idempotent reconciled usage ledger",
+        "verified billing webhook state machine",
+        "auditable export and deletion",
+        "token revocation",
+        "earlier gates remain green"
+      ],
+      "externalGoEvidence": "A sandbox billing lifecycle completes end to end"
+    },
+    {
+      "number": 6,
+      "id": "documentation-intelligence",
+      "name": "Documentation Intelligence",
+      "status": "incomplete",
+      "prerequisites": [5],
+      "lockDocument": "docs/phase-6/implementation-plan.md",
+      "reviewDocument": "reviews/phase-6-documentation-intelligence-review.md",
+      "gateCommand": "npm run gate:intelligence",
+      "slices": [
+        "documentation-gap-model",
+        "evidence-constrained-draft-generation",
+        "human-approval-workflow",
+        "github-draft-pr-integration-gate"
+      ],
+      "requiredOutcomes": [
+        "every material draft claim has evidence",
+        "unsupported or conflicting evidence blocks approval",
+        "no write occurs without approval",
+        "repository path and base revision are pinned",
+        "duplicate and stale publication are blocked",
+        "generated pull requests are drafts only",
+        "complete publication audit trail",
+        "earlier gates remain green"
+      ],
+      "externalGoEvidence": "A real human-reviewed documentation proposal completes the workflow"
+    }
+  ],
+  "mergeProtocol": {
+    "branchPattern": "agent/phase-N-slice",
+    "base": "main",
+    "pullRequestState": "ready-for-review",
+    "mergeMethod": "squash",
+    "requireGreenCi": true,
+    "verifyMainAfterMerge": true,
+    "continueAutomatically": true,
+    "completionReportFields": [
+      "branch",
+      "pullRequest",
+      "validatedHeadSha",
+      "ciResults",
+      "mergeSha",
+      "mainHead",
+      "gates",
+      "remainingBlockers"
+    ]
+  }
+}
