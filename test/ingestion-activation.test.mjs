@@ -139,7 +139,11 @@ test('version and runtime scopes remain independently active with zero contamina
 
 test('quarantined content with chunks and incomplete membership are rejected before mutation', () => {
   const quarantinedManifest = manifest([{ locator: 'docs/secret.md', text: 'secret', quarantined: true }]);
-  const bad = seedRevision('corpus_bad', quarantinedManifest);
+  const safeQuarantine = seedRevision('corpus_bad', quarantinedManifest);
+  const bad = {
+    ...safeQuarantine,
+    documents: safeQuarantine.documents.map((document) => ({ ...document, chunkIds: ['unsafe_quarantined_chunk'] }))
+  };
   assert.throws(() => validateCorpusRevision(bad), (error) => error.code === 'INGEST_ACTIVATION_QUARANTINED');
   const incomplete = { ...bad, documents: [] };
   assert.throws(() => validateCorpusRevision(incomplete), (error) => error.code === 'INGEST_ACTIVATION_INCOMPLETE');
